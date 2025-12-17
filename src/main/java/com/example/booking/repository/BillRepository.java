@@ -1,0 +1,15 @@
+package com.example.booking.repository;
+
+import com.example.booking.entity.Bill;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface BillRepository extends JpaRepository<Bill, Long> {
+    
+    Optional<Bill> findByBookingId(Long bookingId);
+    
+    Optional<Bill> findByOrderId(Long orderId);
+}
