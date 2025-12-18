@@ -204,8 +204,8 @@
                         '<td>' + formatPrice(c.basePricePerHour) + '</td>' +
                         '<td><span class="court-status ' + c.status.toLowerCase() + '">' + c.status + '</span></td>' +
                         '<td>' +
-                        '<button class="action-btn" style="background: #2196f3; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Edit</button>' +
-                        '<button class="action-btn" style="background: ' + (c.status === 'ACTIVE' ? '#f44336' : '#4caf50') + '; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">' +
+                        '<button onclick="showOwnerEditCourtModal(' + c.id + ')" class="action-btn" style="background: #2196f3; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Edit</button>' +
+                        '<button onclick="toggleCourtStatus(' + c.id + ', \'' + c.status + '\')" class="action-btn" style="background: ' + (c.status === 'ACTIVE' ? '#f44336' : '#4caf50') + '; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">' +
                         (c.status === 'ACTIVE' ? 'Deactivate' : 'Activate') +
                         '</button>' +
                         '</td>' +
@@ -449,6 +449,142 @@
         .catch(function(error) {
             console.error('Error rejecting booking:', error);
             alert('❌ Error rejecting booking');
+        });
+    };
+    
+    // Show edit court modal
+    window.showOwnerEditCourtModal = function(courtId) {
+        // First, fetch court details
+        fetch('/api/courts/' + courtId)
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var court = result.data || result;
+                
+                var modal = document.createElement('div');
+                modal.id = 'editCourtModal';
+                modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+                modal.innerHTML = 
+                    '<div style="background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">' +
+                    '<h2 style="margin-bottom: 20px; color: #333;">✏️ Edit Court</h2>' +
+                    '<form id="editCourtForm">' +
+                    '<input type="hidden" name="courtId" value="' + court.id + '">' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Court Name:</label>' +
+                    '<input type="text" name="name" value="' + court.name + '" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' +
+                    '</div>' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Court Type:</label>' +
+                    '<select name="type" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' +
+                    '<option value="FOOTBALL" ' + (court.type === 'FOOTBALL' ? 'selected' : '') + '>Football</option>' +
+                    '<option value="BADMINTON" ' + (court.type === 'BADMINTON' ? 'selected' : '') + '>Badminton</option>' +
+                    '<option value="TENNIS" ' + (court.type === 'TENNIS' ? 'selected' : '') + '>Tennis</option>' +
+                    '<option value="FUTSAL" ' + (court.type === 'FUTSAL' ? 'selected' : '') + '>Futsal</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Location:</label>' +
+                    '<input type="text" name="location" value="' + court.location + '" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' +
+                    '</div>' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Price per Hour (VND):</label>' +
+                    '<input type="number" name="basePricePerHour" value="' + court.basePricePerHour + '" required min="0" step="1000" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' +
+                    '</div>' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Description:</label>' +
+                    '<textarea name="description" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' + (court.description || '') + '</textarea>' +
+                    '</div>' +
+                    '<div style="margin-bottom: 15px;">' +
+                    '<label style="display: block; margin-bottom: 5px; font-weight: 600;">Image URL (optional):</label>' +
+                    '<input type="url" name="imageUrl" value="' + (court.imageUrl || '') + '" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 10px; justify-content: flex-end;">' +
+                    '<button type="button" onclick="closeEditCourtModal()" style="padding: 12px 24px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; background: white;">Cancel</button>' +
+                    '<button type="submit" style="padding: 12px 24px; background: #2196f3; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">💾 Save Changes</button>' +
+                    '</div>' +
+                    '</form>' +
+                    '</div>';
+                
+                document.body.appendChild(modal);
+                
+                // Handle form submission
+                document.getElementById('editCourtForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateCourt(courtId, this);
+                });
+            })
+            .catch(function(error) {
+                console.error('Error fetching court details:', error);
+                alert('❌ Error loading court details');
+            });
+    };
+    
+    // Close edit modal
+    window.closeEditCourtModal = function() {
+        var modal = document.getElementById('editCourtModal');
+        if (modal) {
+            modal.remove();
+        }
+    };
+    
+    // Update court
+    function updateCourt(courtId, form) {
+        var formData = new FormData(form);
+        var data = {
+            name: formData.get('name'),
+            type: formData.get('type'),
+            location: formData.get('location'),
+            basePricePerHour: parseFloat(formData.get('basePricePerHour')),
+            description: formData.get('description'),
+            imageUrl: formData.get('imageUrl')
+        };
+        
+        fetch('/api/court-owner/courts/' + courtId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                alert('✅ Court updated successfully!');
+                closeEditCourtModal();
+                loadOwnerCourts();
+            } else {
+                alert('❌ ' + (result.message || 'Error updating court'));
+            }
+        })
+        .catch(function(error) {
+            console.error('Error updating court:', error);
+            alert('❌ Error updating court');
+        });
+    }
+    
+    // Toggle court status (activate/deactivate)
+    window.toggleCourtStatus = function(courtId, currentStatus) {
+        var action = currentStatus === 'ACTIVE' ? 'deactivate' : 'activate';
+        var confirmMsg = 'Are you sure you want to ' + action + ' this court?';
+        
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+        
+        fetch('/api/court-owner/courts/' + courtId + '/status', {
+            method: 'PATCH'
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                alert('✅ Court ' + action + 'd successfully!');
+                loadOwnerCourts();
+            } else {
+                alert('❌ ' + (result.message || 'Error ' + action + 'ing court'));
+            }
+        })
+        .catch(function(error) {
+            console.error('Error toggling court status:', error);
+            alert('❌ Error ' + action + 'ing court');
         });
     };
     
