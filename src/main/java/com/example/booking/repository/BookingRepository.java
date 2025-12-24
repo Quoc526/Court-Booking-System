@@ -65,4 +65,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     java.util.Optional<Booking> findByIdWithRelations(@Param("id") Long id);
     
     boolean existsByScheduleIdAndStatusNot(Long scheduleId, BookingStatus status);
+    
+    // Check if sub-court is booked for a specific schedule
+    @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM Booking b " +
+           "WHERE b.subCourt.id = :subCourtId AND b.schedule.id = :scheduleId " +
+           "AND b.status NOT IN ('CANCELLED', 'CANCELED')")
+    boolean existsBySubCourtIdAndScheduleId(@Param("subCourtId") Long subCourtId, @Param("scheduleId") Long scheduleId);
 }

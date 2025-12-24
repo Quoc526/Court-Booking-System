@@ -44,9 +44,10 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BookingException("You can only review your own bookings");
         }
         
-        // Verify booking is done
-        if (booking.getStatus() != BookingStatus.DONE) {
-            throw new BookingException("You can only review completed bookings");
+        // Accept both CONFIRMED and DONE bookings for reviews (demo purpose)
+        if (booking.getStatus() != BookingStatus.DONE && 
+            booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new BookingException("You can only review confirmed or completed bookings");
         }
         
         // Check if user has already reviewed this booking
@@ -60,6 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
             .user(user)
             .rating(request.getRating())
             .comment(request.getComment())
+            .imageUrl(request.getImageUrl())
             .status(ReviewStatus.APPROVED) // Auto-approve for simplicity
             .build();
         
@@ -68,6 +70,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewResponseDTO> getApprovedReviewsByCourtId(Long courtId) {
         List<Review> reviews = reviewRepository.findByCourtIdAndStatus(courtId, ReviewStatus.APPROVED);
         return reviews.stream()
@@ -76,6 +79,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewResponseDTO> getAllReviews() {
         return reviewRepository.findAll().stream()
             .map(this::convertToDTO)
@@ -90,6 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
             .userName(review.getUser().getFullName())
             .rating(review.getRating())
             .comment(review.getComment())
+            .imageUrl(review.getImageUrl())
             .status(review.getStatus().name())
             .createdAt(review.getCreatedAt())
             .build();

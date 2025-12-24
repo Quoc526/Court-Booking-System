@@ -39,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ServiceItemRepository serviceItemRepository;
     private final OrderRepository orderRepository;
+    private final SubCourtRepository subCourtRepository;
     
     @Value("${booking.cancellation.min-hours-before:2}")
     private int minHoursBeforeCancellation;
@@ -68,11 +69,38 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingException("Schedule does not belong to the specified court");
         }
         
+        // Handle sub-court if provided
+        SubCourt subCourt = null;
+        if (request.getSubCourtId() != null) {
+            subCourt = subCourtRepository.findById(request.getSubCourtId())
+                .orElseThrow(() -> new ResourceNotFoundException("SubCourt", "id", request.getSubCourtId()));
+            
+            // Verify sub-court belongs to the court
+            if (!subCourt.getCourt().getId().equals(request.getCourtId())) {
+                throw new BookingException("Sub-court does not belong to the specified court");
+            }
+            
+            // Check if sub-court is available
+            if (!subCourt.getIsAvailable()) {
+                throw new BookingException("This sub-court is not available");
+            }
+            
+            // Check for conflicting bookings in this sub-court for the same time slot
+            boolean hasConflict = bookingRepository.existsBySubCourtIdAndScheduleId(
+                request.getSubCourtId(), request.getScheduleId());
+            if (hasConflict) {
+                throw new DuplicateBookingException("This sub-court is already booked for this time slot");
+            }
+        }
+        
+        final SubCourt finalSubCourt = subCourt;
+        
         try {
             // Create booking with PENDING status (owner needs to approve)
             Booking booking = Booking.builder()
                 .user(user)
                 .court(court)
+                .subCourt(finalSubCourt)
                 .schedule(schedule)
                 .bookingTime(LocalDateTime.now())
                 .status(BookingStatus.PENDING)
@@ -284,6 +312,8 @@ public class BookingServiceImpl implements BookingService {
             .userName(booking.getUser().getFullName())
             .courtId(booking.getCourt().getId())
             .courtName(booking.getCourt().getName())
+            .subCourtId(booking.getSubCourt() != null ? booking.getSubCourt().getId() : null)
+            .subCourtName(booking.getSubCourt() != null ? booking.getSubCourt().getName() : null)
             .scheduleId(booking.getSchedule().getId())
             .scheduleDate(booking.getSchedule().getDate().toString())
             .scheduleTime(booking.getSchedule().getStartTime() + " - " + booking.getSchedule().getEndTime())

@@ -60,9 +60,13 @@
             loadCourts();
         } else if (tabName === 'bookings') {
             loadMyBookings();
+        } else if (tabName === 'reviews') {
+            loadReviews();
         } else if (tabName === 'owner-courts') {
             loadOwnerCourts();
             loadOwnerBookings();
+        } else if (tabName === 'revenue') {
+            loadRevenue();
         } else if (tabName === 'admin') {
             loadAdminData();
         } else if (tabName === 'manage-courts') {
@@ -95,23 +99,75 @@
                 for (var i = 0; i < courts.length; i++) {
                     var court = courts[i];
                     var imgHtml = court.imageUrl ? 
-                        '<div style="width: 100%; height: 180px; overflow: hidden; margin: -20px -20px 15px -20px; border-radius: 10px 10px 0 0;">' +
-                        '<img src="' + court.imageUrl + '" alt="Court" style="width: 100%; height: 100%; object-fit: cover;" ' +
+                        '<div style="width: 100%; height: 180px; overflow: hidden; margin: -20px -20px 15px -20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">' +
+                        '<img src="' + court.imageUrl + '" alt="Court" style="max-width: 100%; max-height: 100%; object-fit: contain;" ' +
                         'onerror="this.parentElement.style.display=\'none\'">' +
                         '</div>' : '';
                     
-                    html += '<div class="court-card">' +
-                        imgHtml +
-                        '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
-                        '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
-                        '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
-                        '<div class="court-price">' + formatPrice(court.basePricePerHour || court.pricePerHour || 0) + '/hour</div>' +
-                        '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
-                        'style="display: block; text-align: center; text-decoration: none; margin-top: 15px;">' +
-                        'Book Now</a>' +
-                        '</div>';
+                    // Fetch review stats for this court
+                    fetch('/api/reviews/court/' + court.id + '/stats')
+                        .then(function(response) { return response.json(); })
+                        .then(function(statsResult) {
+                            var reviewBadge = '';
+                            if (statsResult && statsResult.data && statsResult.data.totalReviews > 0) {
+                                var avgRating = statsResult.data.averageRating.toFixed(1);
+                                var stars = '⭐'.repeat(Math.round(statsResult.data.averageRating));
+                                reviewBadge = '<div class="court-review-stats">' +
+                                    '<div class="review-stars">' +
+                                    '<span>' + stars + '</span>' +
+                                    '<span>' + avgRating + '</span>' +
+                                    '</div>' +
+                                    '<div class="review-count">(' + statsResult.data.totalReviews + ' đánh giá)</div>' +
+                                    '</div>';
+                            } else {
+                                reviewBadge = '<div class="no-reviews">🌟 Chưa có đánh giá</div>';
+                            }
+                            
+                            var courtCard = '<div class="court-card">' +
+                                imgHtml +
+                                '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
+                                '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
+                                '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
+                                '<div class="court-price">' + formatPrice(court.basePricePerHour || court.pricePerHour || 0) + '/hour</div>' +
+                                reviewBadge +
+                                '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
+                                '<button onclick="viewCourtDetails(' + court.id + ')" class="book-btn" ' +
+                                'style="flex: 1; margin: 0; background: #2196f3;">📋 Reviews</button>' +
+                                '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
+                                'style="flex: 1; text-align: center; text-decoration: none; margin: 0; line-height: 40px;">Book Now</a>' +
+                                '</div>' +
+                                '</div>';
+                            
+                            var tempContainer = document.createElement('div');
+                            tempContainer.innerHTML = courtCard;
+                            container.appendChild(tempContainer.firstChild);
+                        })
+                        .catch(function() {
+                            // If stats fail to load, just show without stats
+                            var courtCard = '<div class="court-card">' +
+                                imgHtml +
+                                '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
+                                '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
+                                '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
+                                '<div class="court-price">' + formatPrice(court.basePricePerHour || court.pricePerHour || 0) + '/hour</div>' +
+                                '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
+                                '<button onclick="viewCourtDetails(' + court.id + ')" class="book-btn" ' +
+                                'style="flex: 1; margin: 0; background: #2196f3;">📋 Reviews</button>' +
+                                '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
+                                'style="flex: 1; text-align: center; text-decoration: none; margin: 0; line-height: 40px;">Book Now</a>' +
+                                '</div>' +
+                                '</div>';
+                            
+                            var tempContainer = document.createElement('div');
+                            tempContainer.innerHTML = courtCard;
+                            container.appendChild(tempContainer.firstChild);
+                        });
                 }
-                container.innerHTML = html;
+                
+                // Clear loading message
+                if (courts.length > 0) {
+                    container.innerHTML = '';
+                }
             })
             .catch(function(error) {
                 console.error('Error loading courts:', error);
@@ -128,7 +184,7 @@
         var tbody = document.getElementById('bookingsTableBody');
         if (!tbody) return;
         
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">Loading bookings...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Loading bookings...</td></tr>';
         
         fetch('/api/bookings/my-bookings')
             .then(function(response) { return response.json(); })
@@ -136,7 +192,7 @@
                 var bookings = result.data || result;
                 
                 if (!Array.isArray(bookings) || bookings.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #999;">' +
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 60px; color: #999;">' +
                         '<div style="font-size: 48px; margin-bottom: 20px;">📅</div>' +
                         '<h3>No bookings yet</h3>' +
                         '<p>Book a court to get started!</p>' +
@@ -155,6 +211,7 @@
                     html += '<tr>' +
                         '<td>#' + b.id + '</td>' +
                         '<td>' + (b.courtName || 'N/A') + '</td>' +
+                        '<td>' + (b.subCourtName || '-') + '</td>' +
                         '<td>' + (b.scheduleDate || b.date || 'N/A') + '</td>' +
                         '<td>' + (b.scheduleTime || (b.startTime + ' - ' + b.endTime) || 'N/A') + '</td>' +
                         '<td>' + formatPrice(b.totalPrice || 0) + '</td>' +
@@ -166,7 +223,7 @@
             })
             .catch(function(error) {
                 console.error('Error loading bookings:', error);
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">Error loading bookings</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #f44336;">Error loading bookings</td></tr>';
             });
     }
     
@@ -204,6 +261,7 @@
                         '<td>' + formatPrice(c.basePricePerHour) + '</td>' +
                         '<td><span class="court-status ' + c.status.toLowerCase() + '">' + c.status + '</span></td>' +
                         '<td>' +
+                        '<button onclick="manageSubCourts(' + c.id + ', \'' + c.name.replace(/'/g, "\\'") + '\')" class="action-btn" style="background: #9c27b0; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Sub-Courts</button>' +
                         '<button onclick="showOwnerEditCourtModal(' + c.id + ')" class="action-btn" style="background: #2196f3; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Edit</button>' +
                         '<button onclick="toggleCourtStatus(' + c.id + ', \'' + c.status + '\')" class="action-btn" style="background: ' + (c.status === 'ACTIVE' ? '#f44336' : '#4caf50') + '; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">' +
                         (c.status === 'ACTIVE' ? 'Deactivate' : 'Activate') +
@@ -587,5 +645,428 @@
             alert('❌ Error ' + action + 'ing court');
         });
     };
+    
+    // Sub-Court Management Functions
+    window.manageSubCourts = function(courtId, courtName) {
+        var modal = createSubCourtsModal(courtId, courtName);
+        document.body.appendChild(modal);
+        
+        // Setup event listeners AFTER appending to DOM
+        document.getElementById('addSubCourtBtn').onclick = function() {
+            document.getElementById('addSubCourtForm').style.display = 'block';
+        };
+        
+        loadSubCourts(courtId);
+    };
+    
+    function createSubCourtsModal(courtId, courtName) {
+        var modal = document.createElement('div');
+        modal.id = 'subCourtsModal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+        
+        modal.innerHTML = '<div style="background: white; padding: 30px; border-radius: 8px; width: 800px; max-height: 80vh; overflow-y: auto;">' +
+            '<h2 style="margin-top: 0;">Sub-Courts for ' + courtName + '</h2>' +
+            '<button id="addSubCourtBtn" style="background: #4caf50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 15px;">➕ Add Sub-Court</button>' +
+            '<div id="addSubCourtForm" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 4px; margin-bottom: 15px;">' +
+            '<input type="hidden" id="subCourtCourtId" value="' + courtId + '">' +
+            '<input type="text" id="subCourtName" placeholder="Sub-Court Name" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
+            '<textarea id="subCourtDescription" placeholder="Description (optional)" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;" rows="3"></textarea>' +
+            '<button onclick="createSubCourt()" style="background: #2196f3; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">Save</button>' +
+            '<button onclick="hideAddSubCourtForm()" style="background: #666; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>' +
+            '</div>' +
+            '<table style="width: 100%; border-collapse: collapse;">' +
+            '<thead><tr style="background: #f5f5f5;">' +
+            '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">ID</th>' +
+            '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Name</th>' +
+            '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Status</th>' +
+            '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Actions</th>' +
+            '</tr></thead>' +
+            '<tbody id="subCourtsTableBody"></tbody>' +
+            '</table>' +
+            '<button onclick="closeSubCourtsModal()" style="background: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">Close</button>' +
+            '</div>';
+        
+        return modal;
+    }
+    
+    window.closeSubCourtsModal = function() {
+        var modal = document.getElementById('subCourtsModal');
+        if (modal) modal.remove();
+    };
+    
+    window.hideAddSubCourtForm = function() {
+        document.getElementById('addSubCourtForm').style.display = 'none';
+        document.getElementById('subCourtName').value = '';
+        document.getElementById('subCourtDescription').value = '';
+    };
+    
+    function loadSubCourts(courtId) {
+        var tbody = document.getElementById('subCourtsTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Loading...</td></tr>';
+        
+        fetch('/api/subcourts/court/' + courtId)
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var subCourts = result.data || result;
+                
+                if (!Array.isArray(subCourts) || subCourts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">No sub-courts yet. Click "Add Sub-Court" to create one.</td></tr>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < subCourts.length; i++) {
+                    var sc = subCourts[i];
+                    html += '<tr>' +
+                        '<td style="padding: 12px; border-bottom: 1px solid #eee;">#' + sc.id + '</td>' +
+                        '<td style="padding: 12px; border-bottom: 1px solid #eee;">' + sc.name + '</td>' +
+                        '<td style="padding: 12px; border-bottom: 1px solid #eee;"><span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; background: ' + (sc.isAvailable ? '#4caf50' : '#f44336') + '; color: white;">' + (sc.isAvailable ? 'Available' : 'Unavailable') + '</span></td>' +
+                        '<td style="padding: 12px; border-bottom: 1px solid #eee;">' +
+                        '<button onclick="toggleSubCourtStatus(' + sc.id + ', ' + sc.isAvailable + ', ' + courtId + ')" style="background: ' + (sc.isAvailable ? '#f44336' : '#4caf50') + '; color: white; padding: 5px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; font-size: 12px;">' +
+                        (sc.isAvailable ? 'Disable' : 'Enable') +
+                        '</button>' +
+                        '<button onclick="deleteSubCourt(' + sc.id + ', ' + courtId + ')" style="background: #666; color: white; padding: 5px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+                tbody.innerHTML = html;
+            })
+            .catch(function(error) {
+                console.error('Error loading sub-courts:', error);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #f44336;">Error loading sub-courts</td></tr>';
+            });
+    }
+    
+    window.createSubCourt = function() {
+        var courtId = document.getElementById('subCourtCourtId').value;
+        var name = document.getElementById('subCourtName').value;
+        var description = document.getElementById('subCourtDescription').value;
+        
+        if (!name) {
+            alert('Please enter sub-court name');
+            return;
+        }
+        
+        fetch('/api/subcourts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                courtId: parseInt(courtId),
+                name: name,
+                description: description,
+                isAvailable: true
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                alert('✅ Sub-court created successfully!');
+                hideAddSubCourtForm();
+                loadSubCourts(courtId);
+            } else {
+                alert('❌ Error: ' + (result.message || 'Failed to create sub-court'));
+            }
+        })
+        .catch(function(error) {
+            console.error('Error creating sub-court:', error);
+            alert('❌ Error creating sub-court');
+        });
+    };
+    
+    window.toggleSubCourtStatus = function(subCourtId, currentStatus, courtId) {
+        fetch('/api/subcourts/' + subCourtId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                isAvailable: !currentStatus
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                loadSubCourts(courtId);
+            } else {
+                alert('❌ Error updating sub-court status');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error updating sub-court:', error);
+            alert('❌ Error updating sub-court');
+        });
+    };
+    
+    window.deleteSubCourt = function(subCourtId, courtId) {
+        if (!confirm('Are you sure you want to delete this sub-court?')) {
+            return;
+        }
+        
+        fetch('/api/subcourts/' + subCourtId, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            if (result.success) {
+                alert('✅ Sub-court deleted successfully!');
+                loadSubCourts(courtId);
+            } else {
+                alert('❌ Error deleting sub-court');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error deleting sub-court:', error);
+            alert('❌ Error deleting sub-court');
+        });
+    };
+    
+    // Load Reviews & Feedback
+    function loadReviews() {
+        var tbody = document.getElementById('reviewsTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">Loading reviews...</td></tr>';
+        
+        fetch('/api/bookings/my-bookings')
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var bookings = result.data || result;
+                
+                if (!Array.isArray(bookings) || bookings.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 60px; color: #999;">' +
+                        '<div style="font-size: 48px; margin-bottom: 20px;">⭐</div>' +
+                        '<h3>No reviews yet</h3>' +
+                        '<p>Book a court and leave a review!</p>' +
+                        '</td></tr>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < bookings.length; i++) {
+                    var b = bookings[i];
+                    if (b.status === 'COMPLETED') {
+                        html += '<tr>' +
+                            '<td>' + (b.courtName || 'N/A') + '</td>' +
+                            '<td><span style="color: #ffc107;">⭐⭐⭐⭐⭐</span></td>' +
+                            '<td>Great court! Will book again.</td>' +
+                            '<td>' + (b.scheduleDate || 'N/A') + '</td>' +
+                            '<td><button class="action-btn btn-review" onclick="alert(\'Review feature coming soon!\')">Edit Review</button></td>' +
+                            '</tr>';
+                    }
+                }
+                
+                if (html === '') {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 60px; color: #999;">No completed bookings to review yet</td></tr>';
+                } else {
+                    tbody.innerHTML = html;
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading reviews:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #f44336;">Error loading reviews</td></tr>';
+            });
+    }
+    
+    // Load Revenue (Court Owner)
+    function loadRevenue() {
+        // Load stats
+        fetch('/api/court-owner/my-bookings')
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var bookings = result.data || result;
+                
+                if (!Array.isArray(bookings)) {
+                    bookings = [];
+                }
+                
+                var totalRevenue = 0;
+                var monthlyRevenue = 0;
+                var activeBookings = 0;
+                var currentMonth = new Date().getMonth();
+                
+                // Prepare data for charts
+                var last7Days = [];
+                var revenueByDay = {};
+                var statusCounts = { PENDING: 0, CONFIRMED: 0, CANCELLED: 0, COMPLETED: 0 };
+                
+                // Get last 7 days
+                for (var i = 6; i >= 0; i--) {
+                    var date = new Date();
+                    date.setDate(date.getDate() - i);
+                    var dateStr = date.toISOString().split('T')[0];
+                    last7Days.push(dateStr);
+                    revenueByDay[dateStr] = 0;
+                }
+                
+                for (var i = 0; i < bookings.length; i++) {
+                    var b = bookings[i];
+                    totalRevenue += b.totalPrice || 0;
+                    
+                    // Add to daily revenue if within last 7 days
+                    if (b.scheduleDate && revenueByDay.hasOwnProperty(b.scheduleDate)) {
+                        revenueByDay[b.scheduleDate] += (b.totalPrice || 0);
+                    }
+                    
+                    if (b.scheduleDate) {
+                        var bookingMonth = new Date(b.scheduleDate).getMonth();
+                        if (bookingMonth === currentMonth) {
+                            monthlyRevenue += b.totalPrice || 0;
+                        }
+                    }
+                    
+                    if (b.status === 'CONFIRMED' || b.status === 'PENDING') {
+                        activeBookings++;
+                    }
+                    
+                    // Count by status
+                    if (statusCounts.hasOwnProperty(b.status)) {
+                        statusCounts[b.status]++;
+                    }
+                }
+                
+                document.getElementById('ownerTotalRevenue').textContent = formatPrice(totalRevenue);
+                document.getElementById('ownerMonthlyRevenue').textContent = formatPrice(monthlyRevenue);
+                document.getElementById('ownerTotalBookings').textContent = bookings.length;
+                document.getElementById('ownerActiveBookings').textContent = activeBookings;
+                
+                // Create revenue trend chart
+                var revenueCtx = document.getElementById('revenueChart');
+                if (revenueCtx && typeof Chart !== 'undefined') {
+                    // Destroy existing chart if any
+                    if (window.revenueChartInstance) {
+                        window.revenueChartInstance.destroy();
+                    }
+                    
+                    var revenueData = last7Days.map(function(date) { return revenueByDay[date]; });
+                    var labels = last7Days.map(function(date) {
+                        var d = new Date(date);
+                        return (d.getMonth() + 1) + '/' + d.getDate();
+                    });
+                    
+                    window.revenueChartInstance = new Chart(revenueCtx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Revenue ($)',
+                                data: revenueData,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.3,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { 
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Create booking status chart
+                var statusCtx = document.getElementById('bookingStatusChart');
+                if (statusCtx && typeof Chart !== 'undefined') {
+                    // Destroy existing chart if any
+                    if (window.statusChartInstance) {
+                        window.statusChartInstance.destroy();
+                    }
+                    
+                    window.statusChartInstance = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
+                            datasets: [{
+                                data: [
+                                    statusCounts.PENDING,
+                                    statusCounts.CONFIRMED,
+                                    statusCounts.COMPLETED,
+                                    statusCounts.CANCELLED
+                                ],
+                                backgroundColor: [
+                                    '#FFC107',
+                                    '#4CAF50',
+                                    '#2196F3',
+                                    '#F44336'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading revenue stats:', error);
+            });
+        
+        // Load revenue by court
+        var tbody = document.getElementById('revenueByCourtTableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Loading revenue data...</td></tr>';
+        
+        fetch('/api/court-owner/my-courts')
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var courts = result.data || result;
+                
+                if (!Array.isArray(courts) || courts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 60px; color: #999;">No courts yet</td></tr>';
+                    return;
+                }
+                
+                // For now, show placeholder data - you'll need to implement backend endpoint for this
+                var html = '';
+                for (var i = 0; i < courts.length; i++) {
+                    var c = courts[i];
+                    html += '<tr>' +
+                        '<td>' + c.name + '</td>' +
+                        '<td>0</td>' +
+                        '<td>' + formatPrice(0) + '</td>' +
+                        '<td>' + formatPrice(0) + '</td>' +
+                        '</tr>';
+                }
+                tbody.innerHTML = html;
+            })
+            .catch(function(error) {
+                console.error('Error loading revenue by court:', error);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #f44336;">Error loading revenue data</td></tr>';
+            });
+    }
+    
+    // View Court Details - Navigate to dedicated reviews page
+    window.viewCourtDetails = function(courtId) {
+        window.location.href = '/court-reviews?courtId=' + courtId;
+    };
+
     
 })();

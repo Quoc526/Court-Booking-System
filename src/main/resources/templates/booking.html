@@ -67,6 +67,13 @@
                     <input type="date" id="bookingDate" name="bookingDate" required>
                 </div>
                 
+                <div class="form-group" id="subCourtGroup" style="display: none;">
+                    <label for="subCourtSelect">Select Sub-Court:</label>
+                    <select id="subCourtSelect" name="subCourtId">
+                        <option value="">-- Select Sub-Court --</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label>Available Time Slots:</label>
                     <div class="time-slots" id="timeSlots">
@@ -138,9 +145,30 @@
                 const pricePerHour = courtData.basePricePerHour || 0;
                 document.getElementById('courtPrice').textContent = formatPrice(pricePerHour);
                 document.getElementById('totalPrice').textContent = formatPrice(pricePerHour);
+                
+                // Load sub-courts if available
+                loadSubCourts();
             } catch (error) {
                 console.error('Error loading court:', error);
                 showError('Failed to load court information');
+            }
+        }
+        
+        // Load sub-courts for this court
+        async function loadSubCourts() {
+            try {
+                const response = await fetch(`/api/subcourts/court/${courtId}/available`);
+                const result = await response.json();
+                const subCourts = result.data || [];
+                
+                if (subCourts.length > 0) {
+                    const select = document.getElementById('subCourtSelect');
+                    select.innerHTML = '<option value="">-- Select Sub-Court --</option>' + 
+                        subCourts.map(sc => `<option value="${sc.id}">${sc.name}</option>`).join('');
+                    document.getElementById('subCourtGroup').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading sub-courts:', error);
             }
         }
         
@@ -222,6 +250,8 @@
                 return;
             }
             
+            const subCourtId = document.getElementById('subCourtSelect').value;
+            
             const bookingData = {
                 courtId: parseInt(courtId),
                 bookingDate: document.getElementById('bookingDate').value,
@@ -229,6 +259,11 @@
                 endTime: selectedSlot.endTime,
                 scheduleId: selectedSlot.slotId
             };
+            
+            // Include subCourtId if selected
+            if (subCourtId) {
+                bookingData.subCourtId = parseInt(subCourtId);
+            }
             
             try {
                 document.getElementById('submitBtn').disabled = true;

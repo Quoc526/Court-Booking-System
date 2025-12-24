@@ -30,6 +30,9 @@ public class Review extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String comment;
     
+    @Column(columnDefinition = "LONGTEXT")
+    private String imageUrl;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
