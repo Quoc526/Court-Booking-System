@@ -19,6 +19,8 @@ public class BookingResponseDTO {
     private String userName;
     private Long courtId;
     private String courtName;
+    private Long subCourtId;
+    private String subCourtName;
     private Long scheduleId;
     private String scheduleDate;
     private String scheduleTime;

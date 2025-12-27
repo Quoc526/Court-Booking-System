@@ -1,6 +1,6 @@
 # Multi-stage build với multi-arch support (x86_64 và ARM64)
 # Stage 1: Build với Maven
-FROM maven:3.8.8-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copy pom.xml và download dependencies trước (layer caching)
@@ -12,7 +12,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime với JRE (multi-arch support)
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy jar file từ build stage

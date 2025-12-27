@@ -48,6 +48,14 @@ public class ViewController {
         return "booking";
     }
     
+    @GetMapping("/court-reviews")
+    public String courtReviews(Authentication authentication) {
+        if (authentication == null) {
+            return "redirect:/login";
+        }
+        return "court-reviews-new";
+    }
+    
     @GetMapping("/login")
     public String login() {
         return "redirect:/login/user";

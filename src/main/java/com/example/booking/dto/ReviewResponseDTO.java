@@ -19,6 +19,7 @@ public class ReviewResponseDTO {
     private String userName;
     private Integer rating;
     private String comment;
+    private String imageUrl;
     private String status;
     private LocalDateTime createdAt;
 }

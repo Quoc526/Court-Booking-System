@@ -31,6 +31,10 @@ public class Booking extends BaseEntity {
     private Court court;
     
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_court_id")
+    private SubCourt subCourt;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
     

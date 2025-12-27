@@ -20,4 +20,6 @@ public class ReviewRequestDTO {
     private Integer rating;
     
     private String comment;
+    
+    private String imageUrl;
 }
