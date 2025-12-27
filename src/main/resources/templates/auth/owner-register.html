@@ -134,51 +134,6 @@
         .divider {
             text-align: center;
             margin: 25px 0;
-            position: relative;
-        }
-        
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e0e0e0;
-        }
-        
-        .divider span {
-            background: white;
-            padding: 0 15px;
-            position: relative;
-            color: #999;
-            font-size: 13px;
-        }
-        
-        .user-link {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 8px;
-        }
-        
-        .user-link a {
-            color: #4caf50;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 25px 0;
-            color: #999;
-            font-weight: bold;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 25px 0;
             color: #999;
             font-weight: bold;
         }
@@ -226,7 +181,7 @@
     <div class="register-container">
         <div class="logo">
             <h1>🏢 Court Booking</h1>
-            <p>Register Court Owner Account</p>
+            <p>Đăng ký tài khoản Chủ Sân</p>
         </div>
         
         <div class="error-message" id="errorMessage"></div>
@@ -234,60 +189,60 @@
         
         <form id="registerForm">
             <div class="form-group">
-                <label for="fullName">Full Name <span class="required">*</span></label>
-                <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
+                <label for="fullName">Họ và Tên <span class="required">*</span></label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Nhập họ và tên">
             </div>
             
             <div class="form-group">
                 <label for="email">Email <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
+                <input type="email" id="email" name="email" required placeholder="Nhập email">
             </div>
             
             <div class="form-group">
-                <label for="password">Password <span class="required">*</span></label>
-                <input type="password" id="password" name="password" required placeholder="Enter password (min 6 characters)" minlength="6">
+                <label for="password">Mật khẩu <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu (ít nhất 6 ký tự)" minlength="6">
             </div>
             
             <div class="form-group">
-                <label for="phoneNumber">Phone Number <span class="required">*</span></label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="Enter your phone number">
+                <label for="phoneNumber">Số điện thoại <span class="required">*</span></label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="Nhập số điện thoại">
             </div>
             
             <div class="business-section">
-                <h3>Business Information</h3>
+                <h3>Thông tin doanh nghiệp</h3>
                 
                 <div class="form-group">
-                    <label for="businessName">Business Name <span class="required">*</span></label>
-                    <input type="text" id="businessName" name="businessName" required placeholder="Enter business name">
+                    <label for="businessName">Tên doanh nghiệp <span class="required">*</span></label>
+                    <input type="text" id="businessName" name="businessName" required placeholder="Nhập tên doanh nghiệp">
                 </div>
                 
                 <div class="form-group">
-                    <label for="businessAddress">Business Address <span class="required">*</span></label>
-                    <textarea id="businessAddress" name="businessAddress" required placeholder="Enter business address"></textarea>
+                    <label for="businessAddress">Địa chỉ doanh nghiệp <span class="required">*</span></label>
+                    <textarea id="businessAddress" name="businessAddress" required placeholder="Nhập địa chỉ doanh nghiệp"></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="taxCode">Tax Code</label>
-                    <input type="text" id="taxCode" name="taxCode" placeholder="Enter tax code (optional)">
+                    <label for="taxCode">Mã số thuế</label>
+                    <input type="text" id="taxCode" name="taxCode" placeholder="Nhập mã số thuế (tùy chọn)">
                 </div>
             </div>
             
-            <button type="submit" class="btn-register">Register as Court Owner</button>
+            <button type="submit" class="btn-register">Đăng ký Chủ Sân</button>
         </form>
         
         <div class="login-link">
-            <a href="/login/owner">Already have an account? Login</a>
+            <a href="/login/owner">Đã có tài khoản? Đăng nhập</a>
             <span style="margin: 0 8px; color: #999;">|</span>
-            <a href="/">Back to Home</a>
+            <a href="/">Quay lại Trang Chủ</a>
         </div>
         
-        <div class="divider">───── OR ─────</div>
+        <div class="divider">───── HOẶC ─────</div>
         
         <div class="user-link">
-            Are you a customer? 
+            Bạn là khách hàng? 
             <a href="/register">
                 <span style="font-size: 16px;">🎾</span>
-                Register as Customer →
+                Đăng ký Khách Hàng →
             </a>
         </div>
     </div>
@@ -327,20 +282,21 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    successMessage.textContent = 'Registration successful! Redirecting to login...';
+                    successMessage.textContent = 'Đăng ký thành công! Chuyển hướng đến đăng nhập...';
                     successMessage.style.display = 'block';
                     setTimeout(() => {
                         window.location.href = '/login';
                     }, 1500);
                 } else {
-                    errorMessage.textContent = data.message || 'Registration failed. Please try again.';
+                    errorMessage.textContent = data.message || 'Đăng ký thất bại. Vui lòng thử lại.';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                errorMessage.textContent = 'Connection error. Please try again later.';
+                errorMessage.textContent = 'Lỗi kết nối. Vui lòng thử lại sau.';
                 errorMessage.style.display = 'block';
             }
         });
     </script>
 </body>
 </html>
+
