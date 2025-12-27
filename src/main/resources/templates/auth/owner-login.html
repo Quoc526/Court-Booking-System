@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Court Owner Login - Court Booking System</title>
+    <title>Đăng Nhập Chủ Sân - Hệ Thống Đặt Sân</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -152,21 +152,21 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>🏟️ Court Management</h1>
-            <span class="owner-badge">🏗️ Court Owner Login</span>
-            <p>Manage your courts & bookings</p>
+            <h1>🏟️ Quản Lý Sân</h1>
+            <span class="owner-badge">🏗️ Đăng Nhập Chủ Sân</span>
+            <p>Quản lý sân và đặt sân của bạn</p>
         </div>
         
         <div th:if="${param.error}" class="error-message show">
-            ❌ Invalid credentials. Please check your email and password.
+            ❌ Sai thông tin đăng nhập. Vui lòng kiểm tra email và mật khẩu.
         </div>
         
         <div th:if="${param.logout}" class="success-message">
-            You have been logged out successfully
+            Bạn đã đăng xuất thành công
         </div>
         
         <div th:if="${param.registered}" class="success-message">
-            Registration successful! Please login.
+            Đăng ký thành công! Vui lòng đăng nhập.
         </div>
         
         <form th:action="@{/auth/login}" method="post">
@@ -174,28 +174,28 @@
             
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="username" required placeholder="owner@email.com">
+                <input type="email" id="email" name="username" required placeholder="chu-sân@email.com">
             </div>
             
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="Enter your password">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu của bạn">
             </div>
             
-            <button type="submit" class="login-btn">Login as Court Owner</button>
+            <button type="submit" class="login-btn">Đăng nhập Chủ Sân</button>
         </form>
         
         <div class="links">
-            <a href="/register/owner">Don't have an account? Register</a>
+            <a href="/register/owner">Chưa có tài khoản? Đăng ký</a>
             <span>|</span>
-            <a href="/">Back to Home</a>
+            <a href="/">Quay lại Trang Chủ</a>
         </div>
         
-        <div class="divider">───── OR ─────</div>
+        <div class="divider">───── HOẶC ─────</div>
         
         <div class="switch-role">
-            Are you a customer? 
-            <a href="/login/user">Login as Customer →</a>
+            Bạn là khách hàng? 
+            <a href="/login/user">Đăng nhập Khách Hàng →</a>
         </div>
     </div>
 </body>

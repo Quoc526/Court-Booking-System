@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Registration - Court Booking System</title>
+    <title>Đăng Ký Khách Hàng - Court Booking</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -114,58 +114,78 @@
         .links a:hover {
             text-decoration: underline;
         }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+        }
+
+        .switch-role {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .switch-role a {
+            color: #764ba2;
+            font-weight: bold;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="register-header">
             <h1>🏟️ Court Booking</h1>
-            <span class="user-badge">👤 Customer Registration</span>
-            <p>Create your account to start booking courts</p>
+            <span class="user-badge">👤 Đăng Ký Khách Hàng</span>
+            <p>Tạo tài khoản để bắt đầu đặt sân</p>
         </div>
         
         <div id="errorMessage" class="error-message"></div>
         
         <form id="registerForm">
             <div class="form-group">
-                <label for="fullName">Full Name:</label>
-                <input type="text" id="fullName" name="fullName" required placeholder="John Doe">
+                <label for="fullName">Họ và Tên:</label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Nguyễn Văn A">
             </div>
             
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required placeholder="your@email.com">
+                <input type="email" id="email" name="email" required placeholder="email@example.com">
             </div>
             
             <div class="form-group">
-                <label for="phoneNumber">Phone Number:</label>
+                <label for="phoneNumber">Số điện thoại:</label>
                 <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="0912345678">
             </div>
             
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="Min 6 characters" minlength="6">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required placeholder="Tối thiểu 6 ký tự" minlength="6">
             </div>
             
             <div class="form-group">
-                <label for="confirmPassword">Confirm Password:</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm password">
+                <label for="confirmPassword">Xác nhận mật khẩu:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Nhập lại mật khẩu">
             </div>
             
-            <button type="submit" class="register-btn">Register</button>
+            <button type="submit" class="register-btn">Đăng Ký</button>
         </form>
         
         <div class="links">
-            <a href="/login/user">Already have an account? Login</a>
+            <a href="/login/user">Đã có tài khoản? Đăng nhập</a>
             <span>|</span>
-            <a href="/">Back to Home</a>
+            <a href="/">Quay lại Trang Chủ</a>
         </div>
         
-        <div class="divider">───── OR ─────</div>
+        <div class="divider">───── HOẶC ─────</div>
         
         <div class="switch-role">
-            Are you a court owner? 
-            <a href="/register/owner">Register as Court Owner →</a>
+            Bạn là chủ sân? 
+            <a href="/register/owner">Đăng ký Chủ Sân →</a>
         </div>
     </div>
     
@@ -177,7 +197,7 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             if (password !== confirmPassword) {
-                showError('Passwords do not match');
+                showError('Mật khẩu không khớp');
                 return;
             }
             
@@ -200,10 +220,10 @@
                     window.location.href = '/login/user?registered=true';
                 } else {
                     const error = await response.json();
-                    showError(error.message || 'Registration failed');
+                    showError(error.message || 'Đăng ký thất bại');
                 }
             } catch (error) {
-                showError('Network error. Please try again.');
+                showError('Lỗi mạng. Vui lòng thử lại.');
             }
         });
         

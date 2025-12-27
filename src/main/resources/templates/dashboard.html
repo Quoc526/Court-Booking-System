@@ -6,12 +6,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Dashboard v4.0 - Court Booking System</title>
+    <title>Bảng điều khiển v4.0 - Hệ thống đặt sân</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        
-        /* Header & Navigation */
+
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header-content { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { font-size: 1.8em; }
@@ -19,283 +18,137 @@
         .user-name { font-weight: bold; }
         .logout-btn { background: rgba(255,255,255,0.2); color: #fff; padding: 8px 20px; text-decoration: none; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); }
         .logout-btn:hover { background: rgba(255,255,255,0.3); }
-        
-        /* Navigation Tabs */
-        .nav-tabs { background: #fff; border-bottom: 2px solid #e0e0e0; position: relative; z-index: 10; }
-        .nav-tabs-content { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
-        .nav-tab { 
-            padding: 15px 30px; 
-            cursor: pointer; 
-            border-bottom: 3px solid transparent; 
-            transition: all 0.3s; 
-            user-select: none;
-            position: relative;
-            z-index: 11;
-        }
-        .nav-tab:hover { background: #f9f9f9; }
+
+        .nav-tabs { background: #fff; border-bottom: 2px solid #e0e0e0; }
+        .nav-tabs-content { max-width: 1200px; margin: 0 auto; display: flex; }
+        .nav-tab { padding: 15px 30px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; text-decoration: none; color: #333; display: block; }
         .nav-tab.active { border-bottom-color: #667eea; color: #667eea; font-weight: bold; }
-        
-        /* Container */
+
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        
-        /* Tab Content */
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        /* Court Cards */
-        .courts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        .court-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .court-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .court-name { font-size: 1.5em; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .court-type { display: inline-block; background: #667eea; color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-bottom: 10px; }
-        .court-location { color: #666; margin: 10px 0; }
-        .court-price { font-size: 1.3em; color: #764ba2; font-weight: bold; margin: 10px 0; }
-        .court-status { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; }
-        .court-status.active { background: #4caf50; color: #fff; }
-        .court-status.inactive { background: #f44336; color: #fff; }
-        .book-btn { background: #667eea; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 15px; font-size: 1em; }
-        .book-btn:hover { background: #5568d3; }
-        
-        /* Bookings Table */
-        .bookings-table { width: 100%; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 20px; }
+
+        .filters { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .filter-group { display: inline-block; margin-right: 20px; }
+        .filter-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+
+        .courts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .court-card { background: #fff; border-radius: 10px; padding: 20px; }
+        .court-name { font-size: 1.5em; font-weight: bold; }
+        .court-type { background: #667eea; color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; }
+        .court-price { font-size: 1.3em; color: #764ba2; font-weight: bold; }
+
+        .book-btn { background: #667eea; color: #fff; padding: 10px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+
+        .bookings-table { width: 100%; background: #fff; border-radius: 10px; margin-top: 20px; }
         .bookings-table table { width: 100%; border-collapse: collapse; }
         .bookings-table th { background: #667eea; color: #fff; padding: 15px; text-align: left; }
         .bookings-table td { padding: 15px; border-bottom: 1px solid #e0e0e0; }
-        .bookings-table tr:hover { background: #f9f9f9; }
-        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; font-weight: bold; }
-        .status-pending { background: #ff9800; color: #fff; }
-        .status-confirmed { background: #4caf50; color: #fff; }
-        .status-completed { background: #2196f3; color: #fff; }
-        .status-cancelled { background: #f44336; color: #fff; }
-        
-        /* Filters */
-        .filters { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .filter-group { display: inline-block; margin-right: 20px; }
-        .filter-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
-        
-        /* Empty State */
-        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
-        .empty-state svg { width: 100px; height: 100px; margin-bottom: 20px; opacity: 0.3; }
-        
-        /* Action Buttons */
-        .action-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; font-size: 0.9em; }
-        .btn-cancel { background: #f44336; color: #fff; }
-        .btn-review { background: #2196f3; color: #fff; }
-        .btn-cancel:hover { background: #d32f2f; }
-        .btn-review:hover { background: #1976d2; }
-        
-        /* Admin Section */
-        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 10px; text-align: center; }
         .stat-value { font-size: 2.5em; font-weight: bold; color: #667eea; }
-        .stat-label { color: #666; margin-top: 5px; }
-        
-        .add-court-btn { background: #4caf50; color: #fff; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-bottom: 20px; }
-        .add-court-btn:hover { background: #45a049; }
+        .stat-label { color: #666; }
+
+        .add-court-btn { background: #4caf50; color: #fff; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
-<body th:data-is-admin="${isAdmin}" th:data-is-court-owner="${isCourtOwner}">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <h1>🏟️ Court Booking System</h1>
-            <div class="user-info">
-                <span class="user-name">👤 <span th:text="${userName}">User</span></span>
-                <span th:if="${isAdmin}" style="background: #ffc107; color: #333; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">ADMIN</span>
-                <span th:if="${isCourtOwner}" style="background: #4caf50; color: #fff; padding: 5px 10px; border-radius: 15px; font-size: 0.85em;">COURT OWNER</span>
-                <a href="/logout" class="logout-btn">Logout</a>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Navigation Tabs -->
-    <div class="nav-tabs" style="background: #fff; border-bottom: 2px solid #e0e0e0;">
-        <div class="nav-tabs-content" style="max-width: 1200px; margin: 0 auto; display: flex; gap: 0;">
-            <a href="#courts" class="nav-tab active" style="padding: 15px 30px; cursor: pointer; border-bottom: 3px solid #667eea; transition: all 0.3s; text-decoration: none; color: #667eea; font-weight: bold; display: block;" onclick="switchTab('courts', event); return false;">🏟️ Available Courts</a>
-            <a href="#bookings" class="nav-tab" style="padding: 15px 30px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; text-decoration: none; color: #333; display: block;" onclick="switchTab('bookings', event); return false;">📅 My Bookings</a>
-            <a href="#owner-courts" class="nav-tab" th:if="${isCourtOwner}" style="padding: 15px 30px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; text-decoration: none; color: #333; display: block;" onclick="switchTab('owner-courts', event); return false;">🏗️ My Courts</a>
-            <a href="#manage-courts" class="nav-tab" th:if="${isAdmin}" style="padding: 15px 30px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; text-decoration: none; color: #333; display: block;" onclick="switchTab('manage-courts', event); return false;">🏗️ Manage Courts</a>
-            <a href="#admin" class="nav-tab" th:if="${isAdmin}" style="padding: 15px 30px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; text-decoration: none; color: #333; display: block;" onclick="switchTab('admin', event); return false;">⚙️ Admin Panel</a>
-        </div>
-    </div>
-    
-    <div class="container">
-        <!-- Courts Tab -->
-        <div id="courts-tab" class="tab-content active">
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Court Type:</label>
-                    <select id="courtTypeFilter" onchange="filterCourts()">
-                        <option value="">All Types</option>
-                        <option value="FOOTBALL">Football</option>
-                        <option value="BADMINTON">Badminton</option>
-                        <option value="TENNIS">Tennis</option>
-                        <option value="FUTSAL">Futsal</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Status:</label>
-                    <select id="statusFilter" onchange="filterCourts()">
-                        <option value="">All Status</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="courts-grid" id="courtsGrid">
-                <!-- Courts will be loaded here via JavaScript -->
-            </div>
-        </div>
-        
-        <!-- Bookings Tab -->
-        <div id="bookings-tab" class="tab-content">
-            <div class="bookings-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>Court</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Total Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookingsTableBody">
-                        <!-- Bookings will be loaded here via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Owner Courts Tab (Court Owner Only) -->
-        <div id="owner-courts-tab" class="tab-content" th:if="${isCourtOwner}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>🏗️ My Courts</h2>
-                <button class="add-court-btn" onclick="showOwnerAddCourtModal()" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">➕ Add New Court</button>
-            </div>
-            
-            <div class="bookings-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Location</th>
-                            <th>Price/Hour</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ownerCourtsTableBody">
-                        <!-- Owner's courts will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div style="margin-top: 40px;">
-                <h3>📊 Bookings for My Courts</h3>
-                <div class="bookings-table" style="margin-top: 20px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Booking ID</th>
-                                <th>Court</th>
-                                <th>Customer</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ownerBookingsTableBody">
-                            <!-- Bookings for owner's courts -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Manage Courts Tab (Admin Only) -->
-        <div id="manage-courts-tab" class="tab-content" th:if="${isAdmin}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2>🏗️ Manage Courts</h2>
-                <button class="add-court-btn" onclick="showAddCourtModal()" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">➕ Add New Court</button>
-            </div>
-            
-            <div class="bookings-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Location</th>
-                            <th>Price/Hour</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="manageCourtsTableBody">
-                        <!-- Courts will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Admin Tab -->
-        <div id="admin-tab" class="tab-content" th:if="${isAdmin}">
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalCourts">0</div>
-                    <div class="stat-label">Total Courts</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalBookings">0</div>
-                    <div class="stat-label">Total Bookings</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalUsers">0</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalRevenue">$0</div>
-                    <div class="stat-label">Total Revenue</div>
-                </div>
-            </div>
-            
-            <button class="add-court-btn" onclick="showAddCourtModal()">➕ Add New Court</button>
-            
-            <div class="bookings-table">
-                <h2 style="padding: 20px; background: #fff;">All Bookings</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>User</th>
-                            <th>Court</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminBookingsTableBody">
-                        <!-- All bookings will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Load external JavaScript file -->
-    <script th:src="@{/js/dashboard.js}"></script>
 
+<body th:data-is-admin="${isAdmin}" th:data-is-court-owner="${isCourtOwner}">
+
+<div class="header">
+    <div class="header-content">
+        <h1>🏟️ Hệ thống đặt sân</h1>
+        <div class="user-info">
+            <span class="user-name">👤 <span th:text="${userName}">Người dùng</span></span>
+            <span th:if="${isAdmin}" style="background:#ffc107;padding:5px 10px;border-radius:15px;">QUẢN TRỊ</span>
+            <span th:if="${isCourtOwner}" style="background:#4caf50;color:#fff;padding:5px 10px;border-radius:15px;">CHỦ SÂN</span>
+            <a href="/logout" class="logout-btn">Đăng xuất</a>
+        </div>
+    </div>
+</div>
+
+<div class="nav-tabs">
+    <div class="nav-tabs-content">
+        <a href="#courts" class="nav-tab active" onclick="switchTab('courts', event); return false;">🏟️ Sân đang mở</a>
+        <a href="#bookings" class="nav-tab" onclick="switchTab('bookings', event); return false;">📅 Lịch đặt của tôi</a>
+        <a href="#owner-courts" class="nav-tab" th:if="${isCourtOwner}" onclick="switchTab('owner-courts', event); return false;">🏗️ Sân của tôi</a>
+        <a href="#revenue" class="nav-tab" th:if="${isCourtOwner}" onclick="switchTab('revenue', event); return false;">💰 Doanh thu</a>
+        <a href="#manage-courts" class="nav-tab" th:if="${isAdmin}" onclick="switchTab('manage-courts', event); return false;">🏗️ Quản lý sân</a>
+        <a href="#admin" class="nav-tab" th:if="${isAdmin}" onclick="switchTab('admin', event); return false;">⚙️ Quản trị hệ thống</a>
+    </div>
+</div>
+
+<div class="container">
+
+<div id="courts-tab" class="tab-content active">
+    <div class="filters">
+        <div class="filter-group">
+            <label>Loại sân:</label>
+            <select>
+                <option>Tất cả</option>
+                <option>Bóng đá</option>
+                <option>Cầu lông</option>
+                <option>Tennis</option>
+                <option>Futsal</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Trạng thái:</label>
+            <select>
+                <option>Tất cả</option>
+                <option>Đang hoạt động</option>
+                <option>Ngừng hoạt động</option>
+            </select>
+        </div>
+    </div>
+    <div class="courts-grid" id="courtsGrid"></div>
+</div>
+
+<div id="bookings-tab" class="tab-content">
+    <div class="bookings-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã đặt sân</th>
+                    <th>Sân</th>
+                    <th>Sân con</th>
+                    <th>Ngày</th>
+                    <th>Giờ</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="bookingsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="admin-tab" class="tab-content" th:if="${isAdmin}">
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-value" id="totalCourts">0</div>
+            <div class="stat-label">Tổng số sân</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalBookings">0</div>
+            <div class="stat-label">Tổng lượt đặt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalUsers">0</div>
+            <div class="stat-label">Tổng người dùng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalRevenue">$0</div>
+            <div class="stat-label">Tổng doanh thu</div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>
