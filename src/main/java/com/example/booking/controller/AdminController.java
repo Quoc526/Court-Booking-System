@@ -27,7 +27,6 @@ import java.util.Map;
 public class AdminController {
     
     private final CourtService courtService;
-    private final ServiceItemService serviceItemService;
     private final BookingService bookingService;
     private final ReportService reportService;
     private final CourtRepository courtRepository;
@@ -62,36 +61,6 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteCourt(@PathVariable Long id) {
         courtService.deleteCourt(id);
         return ResponseEntity.ok(ApiResponse.success("Court deleted successfully", null));
-    }
-    
-    // Service Item Management
-    @GetMapping("/services")
-    public ResponseEntity<ApiResponse<List<ServiceItemResponseDTO>>> getAllServices() {
-        List<ServiceItemResponseDTO> services = serviceItemService.getAllServices();
-        return ResponseEntity.ok(ApiResponse.success(services));
-    }
-    
-    @PostMapping("/services")
-    public ResponseEntity<ApiResponse<ServiceItemResponseDTO>> createService(
-            @Valid @RequestBody ServiceItemRequestDTO request) {
-        ServiceItemResponseDTO service = serviceItemService.createService(request);
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(ApiResponse.success("Service created successfully", service));
-    }
-    
-    @PutMapping("/services/{id}")
-    public ResponseEntity<ApiResponse<ServiceItemResponseDTO>> updateService(
-            @PathVariable Long id,
-            @Valid @RequestBody ServiceItemRequestDTO request) {
-        ServiceItemResponseDTO service = serviceItemService.updateService(id, request);
-        return ResponseEntity.ok(ApiResponse.success("Service updated successfully", service));
-    }
-    
-    @DeleteMapping("/services/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteService(@PathVariable Long id) {
-        serviceItemService.deleteService(id);
-        return ResponseEntity.ok(ApiResponse.success("Service deleted successfully", null));
     }
     
     // Booking Management
@@ -137,13 +106,5 @@ public class AdminController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         RevenueReportDTO report = reportService.getRevenueReport(from, to);
         return ResponseEntity.ok(ApiResponse.success(report));
-    }
-    
-    @GetMapping("/reports/top-services")
-    public ResponseEntity<ApiResponse<List<TopServiceDTO>>> getTopServices(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        List<TopServiceDTO> services = reportService.getTopServices(from, to);
-        return ResponseEntity.ok(ApiResponse.success(services));
     }
 }
