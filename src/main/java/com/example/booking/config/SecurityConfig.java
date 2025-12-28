@@ -72,7 +72,7 @@ public class SecurityConfig {
                 // Court Owner endpoints
                 .requestMatchers("/api/court-owner/**").hasRole("COURT_OWNER")
                 // User endpoints - dashboard, booking pages, and API endpoints
-                .requestMatchers("/dashboard", "/booking", "/api/bookings/**", "/api/users/**", "/api/orders/**").authenticated()
+                .requestMatchers("/dashboard", "/booking", "/api/bookings/**", "/api/users/**").authenticated()
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

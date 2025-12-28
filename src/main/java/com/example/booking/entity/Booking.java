@@ -54,25 +54,16 @@ public class Booking extends BaseEntity {
     
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Order> orders = new ArrayList<>();
-    
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
     
     /**
-     * Calculate total price = schedule price + sum of all order totals
+     * Calculate total price = schedule price
      */
     public void calculateTotalPrice() {
         BigDecimal schedulePrice = schedule != null && schedule.getPrice() != null 
             ? schedule.getPrice() 
             : BigDecimal.ZERO;
-        
-        BigDecimal orderTotal = orders.stream()
-            .map(Order::calculateTotalPrice)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        this.totalPrice = schedulePrice.add(orderTotal);
+        this.totalPrice = schedulePrice;
     }
     
     @PrePersist

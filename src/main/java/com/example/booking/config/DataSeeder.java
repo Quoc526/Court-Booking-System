@@ -26,7 +26,6 @@ public class DataSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final CourtRepository courtRepository;
     private final ScheduleRepository scheduleRepository;
-    private final ServiceItemRepository serviceItemRepository;
     private final PasswordEncoder passwordEncoder;
     
     @Value("${booking.seeding.enabled:true}")
@@ -64,9 +63,6 @@ public class DataSeeder implements CommandLineRunner {
         
         // Create schedules for next 7 days
         createSchedules(courts);
-        
-        // Create service items
-        createServiceItems();
         
         log.info("Data seeding completed successfully");
     }
@@ -167,59 +163,4 @@ public class DataSeeder implements CommandLineRunner {
         log.info("Created {} schedules for next 7 days", scheduleCount);
     }
     
-    private void createServiceItems() {
-        List<ServiceItem> items = new ArrayList<>();
-        
-        items.add(ServiceItem.builder()
-            .name("Badminton Racket")
-            .category(ServiceCategory.RACKET)
-            .unitPrice(new BigDecimal("30000"))
-            .description("Professional badminton racket rental")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Tennis Racket")
-            .category(ServiceCategory.RACKET)
-            .unitPrice(new BigDecimal("40000"))
-            .description("Professional tennis racket rental")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Football")
-            .category(ServiceCategory.BALL)
-            .unitPrice(new BigDecimal("20000"))
-            .description("Standard size 5 football")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Shuttlecock Pack")
-            .category(ServiceCategory.BALL)
-            .unitPrice(new BigDecimal("15000"))
-            .description("Pack of 6 shuttlecocks")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Water Bottle")
-            .category(ServiceCategory.DRINK)
-            .unitPrice(new BigDecimal("10000"))
-            .description("500ml mineral water")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Energy Drink")
-            .category(ServiceCategory.DRINK)
-            .unitPrice(new BigDecimal("25000"))
-            .description("Sports energy drink")
-            .build());
-        
-        items.add(ServiceItem.builder()
-            .name("Towel")
-            .category(ServiceCategory.OTHER)
-            .unitPrice(new BigDecimal("5000"))
-            .description("Clean sport towel")
-            .build());
-        
-        serviceItemRepository.saveAll(items);
-        log.info("Created {} service items", items.size());
-    }
 }

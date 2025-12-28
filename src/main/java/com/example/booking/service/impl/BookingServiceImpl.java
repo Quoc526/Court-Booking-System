@@ -2,10 +2,8 @@ package com.example.booking.service.impl;
 
 import com.example.booking.dto.BookingRequestDTO;
 import com.example.booking.dto.BookingResponseDTO;
-import com.example.booking.dto.OrderItemDTO;
 import com.example.booking.entity.*;
 import com.example.booking.entity.enums.BookingStatus;
-import com.example.booking.entity.enums.OrderStatus;
 import com.example.booking.entity.enums.ScheduleStatus;
 import com.example.booking.exception.BookingException;
 import com.example.booking.exception.DuplicateBookingException;
@@ -37,8 +35,6 @@ public class BookingServiceImpl implements BookingService {
     private final ScheduleRepository scheduleRepository;
     private final CourtRepository courtRepository;
     private final UserRepository userRepository;
-    private final ServiceItemRepository serviceItemRepository;
-    private final OrderRepository orderRepository;
     private final SubCourtRepository subCourtRepository;
     
     @Value("${booking.cancellation.min-hours-before:2}")
@@ -107,31 +103,6 @@ public class BookingServiceImpl implements BookingService {
                 .note(request.getNote())
                 .totalPrice(schedule.getPrice())
                 .build();
-            
-            // Handle order items if provided
-            if (request.getOrderItems() != null && !request.getOrderItems().isEmpty()) {
-                Order order = Order.builder()
-                    .user(user)
-                    .booking(booking)
-                    .createdTime(LocalDateTime.now())
-                    .status(OrderStatus.NEW)
-                    .build();
-                
-                for (OrderItemDTO itemDTO : request.getOrderItems()) {
-                    ServiceItem serviceItem = serviceItemRepository.findById(itemDTO.getServiceItemId())
-                        .orElseThrow(() -> new ResourceNotFoundException("ServiceItem", "id", itemDTO.getServiceItemId()));
-                    
-                    OrderDetail detail = OrderDetail.builder()
-                        .order(order)
-                        .serviceItem(serviceItem)
-                        .quantity(itemDTO.getQuantity())
-                        .build();
-                    
-                    order.addOrderDetail(detail);
-                }
-                
-                booking.getOrders().add(order);
-            }
             
             // Calculate total price
             booking.calculateTotalPrice();
