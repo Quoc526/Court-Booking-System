@@ -16,7 +16,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy jar file từ build stage
-COPY --from=build /app/target/booking-1.0.0.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 # Expose port
 EXPOSE 8080
