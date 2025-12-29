@@ -4,13 +4,17 @@ import com.example.booking.dto.BookingResponseDTO;
 import com.example.booking.dto.CourtRequestDTO;
 import com.example.booking.dto.CourtResponseDTO;
 import com.example.booking.entity.Court;
+import com.example.booking.entity.enums.CourtStatus;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CourtService {
     
     List<CourtResponseDTO> getAllCourts(String type, String location);
-    
+
+    List<CourtResponseDTO> findCourts(CourtStatus status, String type);
+
     CourtResponseDTO getCourtById(Long id);
     
     CourtResponseDTO createCourt(CourtRequestDTO request);

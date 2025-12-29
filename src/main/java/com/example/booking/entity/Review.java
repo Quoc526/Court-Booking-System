@@ -2,18 +2,12 @@ package com.example.booking.entity;
 
 import com.example.booking.entity.enums.ReviewStatus;
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(name = "reviews", indexes = {
     @Index(name = "idx_review_booking", columnList = "booking_id"),
     @Index(name = "idx_review_status", columnList = "status")
 })
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Review extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,6 +29,65 @@ public class Review extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    @Builder.Default
     private ReviewStatus status = ReviewStatus.PENDING;
+
+    public Review() {
+    }
+
+    public Review(Booking booking, User user, Integer rating, String comment, String imageUrl, ReviewStatus status) {
+        this.booking = booking;
+        this.user = user;
+        this.rating = rating;
+        this.comment = comment;
+        this.imageUrl = imageUrl;
+        this.status = status;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public ReviewStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReviewStatus status) {
+        this.status = status;
+    }
 }

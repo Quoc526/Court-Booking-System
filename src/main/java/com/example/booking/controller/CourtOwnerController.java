@@ -8,8 +8,8 @@ import com.example.booking.service.BookingService;
 import com.example.booking.service.CourtService;
 import com.example.booking.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,13 +21,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/court-owner")
 @PreAuthorize("hasRole('COURT_OWNER')")
-@RequiredArgsConstructor
-@Slf4j
 public class CourtOwnerController {
+    
+    private static final Logger log = LoggerFactory.getLogger(CourtOwnerController.class);
     
     private final CourtService courtService;
     private final BookingService bookingService;
     private final UserService userService;
+
+    public CourtOwnerController(CourtService courtService, BookingService bookingService, UserService userService) {
+        this.courtService = courtService;
+        this.bookingService = bookingService;
+        this.userService = userService;
+    }
     
     // Get all courts owned by current court owner
     @GetMapping("/my-courts")

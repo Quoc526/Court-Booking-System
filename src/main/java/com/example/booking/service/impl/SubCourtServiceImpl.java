@@ -7,7 +7,6 @@ import com.example.booking.entity.SubCourt;
 import com.example.booking.repository.CourtRepository;
 import com.example.booking.repository.SubCourtRepository;
 import com.example.booking.service.SubCourtService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +14,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SubCourtServiceImpl implements SubCourtService {
 
     private final SubCourtRepository subCourtRepository;
     private final CourtRepository courtRepository;
+
+    public SubCourtServiceImpl(SubCourtRepository subCourtRepository, CourtRepository courtRepository) {
+        this.subCourtRepository = subCourtRepository;
+        this.courtRepository = courtRepository;
+    }
 
     @Override
     @Transactional

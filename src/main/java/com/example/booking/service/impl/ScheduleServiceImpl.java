@@ -8,7 +8,6 @@ import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.repository.CourtRepository;
 import com.example.booking.repository.ScheduleRepository;
 import com.example.booking.service.ScheduleService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +18,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ScheduleServiceImpl implements ScheduleService {
     
     private final ScheduleRepository scheduleRepository;
     private final CourtRepository courtRepository;
+
+    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, CourtRepository courtRepository) {
+        this.scheduleRepository = scheduleRepository;
+        this.courtRepository = courtRepository;
+    }
     
     @Override
     @Transactional
@@ -53,14 +56,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             LocalTime startTime = LocalTime.of(hour, 0);
             LocalTime endTime = LocalTime.of(hour + 1, 0);
             
-            Schedule schedule = Schedule.builder()
-                .court(court)
-                .date(date)
-                .startTime(startTime)
-                .endTime(endTime)
-                .price(court.getBasePricePerHour())
-                .status(ScheduleStatus.AVAILABLE)
-                .build();
+            Schedule schedule = new Schedule(
+                court,
+                date,
+                startTime,
+                endTime,
+                court.getBasePricePerHour(),
+                ScheduleStatus.AVAILABLE
+            );
             
             schedules.add(schedule);
         }
@@ -76,15 +79,15 @@ public class ScheduleServiceImpl implements ScheduleService {
     
     @Override
     public ScheduleResponseDTO convertToDTO(Schedule schedule) {
-        return ScheduleResponseDTO.builder()
-            .id(schedule.getId())
-            .courtId(schedule.getCourt().getId())
-            .courtName(schedule.getCourt().getName())
-            .date(schedule.getDate())
-            .startTime(schedule.getStartTime())
-            .endTime(schedule.getEndTime())
-            .price(schedule.getPrice())
-            .status(schedule.getStatus().name())
-            .build();
+        ScheduleResponseDTO dto = new ScheduleResponseDTO();
+        dto.setId(schedule.getId());
+        dto.setCourtId(schedule.getCourt().getId());
+        dto.setCourtName(schedule.getCourt().getName());
+        dto.setDate(schedule.getDate());
+        dto.setStartTime(schedule.getStartTime());
+        dto.setEndTime(schedule.getEndTime());
+        dto.setPrice(schedule.getPrice());
+        dto.setStatus(schedule.getStatus().name());
+        return dto;
     }
 }
