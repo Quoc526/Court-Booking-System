@@ -78,6 +78,7 @@ public class AdminController {
         List<BookingResponseDTO> bookings = bookingService.getAllBookings(date, status);
         return ResponseEntity.ok(ApiResponse.success(bookings));
     }
+
     
     @PutMapping("/bookings/{id}/status")
     public ResponseEntity<ApiResponse<BookingResponseDTO>> updateBookingStatus(

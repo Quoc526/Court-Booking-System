@@ -13,11 +13,7 @@ import java.util.List;
 public interface CourtRepository extends JpaRepository<Court, Long> {
     
     List<Court> findByStatus(CourtStatus status);
-    
-    List<Court> findByTypeAndStatus(String type, CourtStatus status);
-    
-    List<Court> findByLocationContainingIgnoreCaseAndStatus(String location, CourtStatus status);
-    
+
     @Query("SELECT c FROM Court c WHERE " +
            "(:type IS NULL OR c.type = :type) AND " +
            "(:location IS NULL OR LOWER(c.location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
@@ -27,4 +23,13 @@ public interface CourtRepository extends JpaRepository<Court, Long> {
         @Param("location") String location,
         @Param("status") CourtStatus status
     );
+    @Query("SELECT c FROM Court c WHERE " +
+            "(:type IS NULL OR c.type = :type) AND " +
+            "(:status IS NULL OR c.status = :status)")
+//            "c.status = :status")
+    List<Court> findByFilters(
+            @Param("status") CourtStatus status,
+            @Param("type") String type
+    );
+    List<Court> findByStatusAndType(CourtStatus status, String type);
 }
