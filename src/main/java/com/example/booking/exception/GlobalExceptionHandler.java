@@ -88,12 +88,11 @@ public class GlobalExceptionHandler {
             validationErrors.put(fieldName, errorMessage);
         });
         
-        ErrorResponse error = ErrorResponse.builder()
-            .status(HttpStatus.BAD_REQUEST.value())
-            .message("Validation failed")
-            .timestamp(LocalDateTime.now())
-            .errors(validationErrors)
-            .build();
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Validation failed",
+            validationErrors
+        );
         
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }

@@ -7,7 +7,6 @@ import com.example.booking.entity.User;
 import com.example.booking.service.ReviewService;
 import com.example.booking.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +17,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reviews")
-@RequiredArgsConstructor
 public class ReviewController {
     
     private final ReviewService reviewService;
     private final UserService userService;
+
+    public ReviewController(ReviewService reviewService, UserService userService) {
+        this.reviewService = reviewService;
+        this.userService = userService;
+    }
     
     /**
      * Get all approved reviews for a specific court

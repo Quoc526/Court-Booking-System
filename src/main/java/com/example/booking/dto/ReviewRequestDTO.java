@@ -3,15 +3,7 @@ package com.example.booking.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ReviewRequestDTO {
     
     @NotNull(message = "Rating is required")
@@ -22,4 +14,37 @@ public class ReviewRequestDTO {
     private String comment;
     
     private String imageUrl;
+
+    public ReviewRequestDTO() {
+    }
+
+    public ReviewRequestDTO(Integer rating, String comment, String imageUrl) {
+        this.rating = rating;
+        this.comment = comment;
+        this.imageUrl = imageUrl;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

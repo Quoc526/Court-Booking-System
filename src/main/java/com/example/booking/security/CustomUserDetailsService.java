@@ -4,8 +4,6 @@ import com.example.booking.entity.CourtOwner;
 import com.example.booking.entity.User;
 import com.example.booking.repository.CourtOwnerRepository;
 import com.example.booking.repository.UserRepository;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,11 +17,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
     
     private final UserRepository userRepository;
     private final CourtOwnerRepository courtOwnerRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository, CourtOwnerRepository courtOwnerRepository) {
+        this.userRepository = userRepository;
+        this.courtOwnerRepository = courtOwnerRepository;
+    }
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -62,7 +64,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             .collect(Collectors.toList());
     }
     
-    @Getter
     public static class CustomUserDetails extends org.springframework.security.core.userdetails.User {
         private final String fullName;
         private final Long userId;
@@ -72,6 +73,14 @@ public class CustomUserDetailsService implements UserDetailsService {
             super(email, password, authorities);
             this.fullName = fullName;
             this.userId = userId;
+        }
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public Long getUserId() {
+            return userId;
         }
     }
 }

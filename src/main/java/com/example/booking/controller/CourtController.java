@@ -5,7 +5,6 @@ import com.example.booking.dto.CourtResponseDTO;
 import com.example.booking.dto.ScheduleResponseDTO;
 import com.example.booking.service.CourtService;
 import com.example.booking.service.ScheduleService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +14,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/courts")
-@RequiredArgsConstructor
 public class CourtController {
     
     private final CourtService courtService;
     private final ScheduleService scheduleService;
+
+    public CourtController(CourtService courtService, ScheduleService scheduleService) {
+        this.courtService = courtService;
+        this.scheduleService = scheduleService;
+    }
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourtResponseDTO>>> getAllCourts(
