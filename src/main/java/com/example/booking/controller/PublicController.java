@@ -3,6 +3,7 @@ package com.example.booking.controller;
 import com.example.booking.dto.ApiResponse;
 import com.example.booking.dto.ReviewResponseDTO;
 import com.example.booking.service.ReviewService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

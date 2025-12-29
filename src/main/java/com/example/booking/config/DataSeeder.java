@@ -171,4 +171,5 @@ public class DataSeeder implements CommandLineRunner {
         
         log.info("Created {} schedules for next 7 days", scheduleCount);
     }
+    
 }

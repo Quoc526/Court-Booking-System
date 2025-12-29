@@ -2,6 +2,10 @@ package com.example.booking.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BookingRequestDTO {
     
     @NotNull(message = "Court ID is required")

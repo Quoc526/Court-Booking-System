@@ -81,43 +81,6 @@ CREATE TABLE IF NOT EXISTS bookings (
     INDEX idx_booking_time (booking_time)
 );
 
--- Service Items table
-CREATE TABLE IF NOT EXISTS service_items (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    category VARCHAR(50) NOT NULL,
-    unit_price DECIMAL(10, 2) NOT NULL,
-    description TEXT,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
-);
-
--- Orders table
-CREATE TABLE IF NOT EXISTS orders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    booking_id BIGINT,
-    created_time DATETIME NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'NEW',
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
-);
-
--- Order Details table
-CREATE TABLE IF NOT EXISTS order_details (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id BIGINT NOT NULL,
-    service_item_id BIGINT NOT NULL,
-    quantity INT NOT NULL,
-    line_total DECIMAL(10, 2) NOT NULL,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (service_item_id) REFERENCES service_items(id) ON DELETE CASCADE
-);
-
 -- Bills table
 CREATE TABLE IF NOT EXISTS bills (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -125,11 +88,9 @@ CREATE TABLE IF NOT EXISTS bills (
     method VARCHAR(20) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     booking_id BIGINT,
-    order_id BIGINT,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL
 );
 
 -- Reviews table

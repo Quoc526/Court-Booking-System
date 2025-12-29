@@ -12,7 +12,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -39,6 +38,11 @@ public class ReportServiceImpl implements ReportService {
             ? totalRevenue.divide(BigDecimal.valueOf(totalBookings), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
         
+        return RevenueReportDTO.builder()
+            .totalRevenue(totalRevenue)
+            .totalBookings(totalBookings)
+            .averageBookingValue(averageBookingValue)
+            .build();
         RevenueReportDTO report = new RevenueReportDTO();
         report.setTotalRevenue(totalRevenue);
         report.setTotalBookings(totalBookings);
