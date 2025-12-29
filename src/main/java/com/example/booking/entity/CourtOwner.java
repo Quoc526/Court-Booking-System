@@ -25,7 +25,8 @@ public class CourtOwner extends BaseEntity {
     @Column(length = 500)
     private String businessAddress;
 
-
+    @Column(length = 50)
+    private String taxCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

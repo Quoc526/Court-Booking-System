@@ -153,20 +153,20 @@
     <div class="filters">
         <div class="filter-group">
             <label>Loại sân:</label>
-            <select>
-                <option>Tất cả</option>
-                <option>Bóng đá</option>
-                <option>Cầu lông</option>
-                <option>Tennis</option>
-                <option>Futsal</option>
+            <select id="courtTypeFilter" onchange="filterCourts()">
+                <option value="ALL">Tất cả</option>
+                <option value="FOOTBALL">Bóng đá</option>
+                <option value="BADMINTON">Cầu lông</option>
+                <option value="TENNIS">Tennis</option>
+                <option value="FUTSAL">Futsal</option>
             </select>
         </div>
         <div class="filter-group">
             <label>Trạng thái:</label>
-            <select>
-                <option>Tất cả</option>
-                <option>Đang hoạt động</option>
-                <option>Ngừng hoạt động</option>
+            <select id="statusFilter" onchange="filterCourts()">
+                <option value="ALL">Tất cả</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
             </select>
         </div>
     </div>

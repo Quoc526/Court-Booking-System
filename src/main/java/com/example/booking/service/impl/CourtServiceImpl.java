@@ -6,18 +6,17 @@ import com.example.booking.dto.CourtResponseDTO;
 import com.example.booking.entity.Booking;
 import com.example.booking.entity.Court;
 import com.example.booking.entity.CourtOwner;
-import com.example.booking.entity.User;
 import com.example.booking.entity.enums.CourtStatus;
 import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.repository.BookingRepository;
 import com.example.booking.repository.CourtOwnerRepository;
 import com.example.booking.repository.CourtRepository;
-import com.example.booking.repository.UserRepository;
 import com.example.booking.service.CourtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,13 +25,11 @@ public class CourtServiceImpl implements CourtService {
     private final CourtRepository courtRepository;
     private final CourtOwnerRepository courtOwnerRepository;
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
 
-    public CourtServiceImpl(CourtRepository courtRepository, CourtOwnerRepository courtOwnerRepository, BookingRepository bookingRepository, UserRepository userRepository) {
+    public CourtServiceImpl(CourtRepository courtRepository, CourtOwnerRepository courtOwnerRepository, BookingRepository bookingRepository) {
         this.courtRepository = courtRepository;
         this.courtOwnerRepository = courtOwnerRepository;
         this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
     }
     
     @Override
@@ -115,7 +112,7 @@ public class CourtServiceImpl implements CourtService {
     
     @Override
     public Court findEntityById(Long id) {
-        return courtRepository.findById(id)
+        return courtRepository.findById(Objects.requireNonNull(id, "Court ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("Court", "id", id));
     }
     
@@ -150,7 +147,7 @@ public class CourtServiceImpl implements CourtService {
     @Override
     @Transactional
     public CourtResponseDTO createCourtForOwner(CourtRequestDTO request, Long ownerId) {
-        CourtOwner owner = courtOwnerRepository.findById(ownerId)
+        CourtOwner owner = courtOwnerRepository.findById(Objects.requireNonNull(ownerId))
             .orElseThrow(() -> new ResourceNotFoundException("Court Owner", "id", ownerId));
         
         Court court = new Court(

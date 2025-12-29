@@ -18,12 +18,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,11 +51,11 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingResponseDTO placeBooking(BookingRequestDTO request, Long userId) {
         // Fetch user
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId, "User ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         
         // Fetch court
-        Court court = courtRepository.findById(request.getCourtId())
+        Court court = courtRepository.findById(Objects.requireNonNull(request.getCourtId(), "Court ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("Court", "id", request.getCourtId()));
         
         // Fetch schedule with pessimistic lock to prevent concurrent booking
@@ -76,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
         // Handle sub-court if provided
         SubCourt subCourt = null;
         if (request.getSubCourtId() != null) {
-            subCourt = subCourtRepository.findById(request.getSubCourtId())
+            subCourt = subCourtRepository.findById(Objects.requireNonNull(request.getSubCourtId(), "SubCourt ID cannot be null"))
                 .orElseThrow(() -> new ResourceNotFoundException("SubCourt", "id", request.getSubCourtId()));
             
             // Verify sub-court belongs to the court
@@ -276,7 +275,7 @@ public class BookingServiceImpl implements BookingService {
     
     @Override
     public Booking findEntityById(Long id) {
-        return bookingRepository.findById(id)
+        return bookingRepository.findById(Objects.requireNonNull(id, "Booking ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("Booking", "id", id));
     }
     
