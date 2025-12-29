@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth") //đã thêm /api, nếu lỗi thì check lại
 public class AuthController {
     
     private final UserService userService;
