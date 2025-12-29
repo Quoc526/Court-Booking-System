@@ -1,11 +1,9 @@
 package com.example.booking.service.impl;
 
 import com.example.booking.dto.RevenueReportDTO;
-import com.example.booking.dto.TopServiceDTO;
 import com.example.booking.entity.Booking;
 import com.example.booking.entity.enums.BookingStatus;
 import com.example.booking.repository.BookingRepository;
-import com.example.booking.repository.OrderDetailRepository;
 import com.example.booking.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,6 @@ import java.util.stream.Collectors;
 public class ReportServiceImpl implements ReportService {
     
     private final BookingRepository bookingRepository;
-    private final OrderDetailRepository orderDetailRepository;
     
     @Override
     public RevenueReportDTO getRevenueReport(LocalDate from, LocalDate to) {
@@ -45,19 +42,5 @@ public class ReportServiceImpl implements ReportService {
             .totalBookings(totalBookings)
             .averageBookingValue(averageBookingValue)
             .build();
-    }
-    
-    @Override
-    public List<TopServiceDTO> getTopServices(LocalDate from, LocalDate to) {
-        List<Object[]> results = orderDetailRepository.getTopServicesByRevenue(from, to);
-        
-        return results.stream()
-            .map(row -> TopServiceDTO.builder()
-                .serviceId(((Number) row[0]).longValue())
-                .serviceName((String) row[1])
-                .totalQuantity(((Number) row[2]).longValue())
-                .totalRevenue((BigDecimal) row[3])
-                .build())
-            .collect(Collectors.toList());
     }
 }

@@ -8,6 +8,18 @@
     
     console.log('Dashboard loaded - Admin:', isAdmin, 'Owner:', isCourtOwner);
     
+    // Helper function to get auth headers (for future JWT usage)
+    function getAuthHeaders() {
+        var headers = {
+            'Content-Type': 'application/json'
+        };
+        var token = localStorage.getItem('jwt_token');
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        return headers;
+    }
+    
     // Format price in Vietnamese currency
     function formatPrice(price) {
         if (!price) return '0 ₫';
@@ -76,106 +88,103 @@
     
     // Load available courts
     function loadCourts() {
-        var container = document.getElementById('courtsGrid');
-        if (!container) return;
-        
-        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Loading courts...</div>';
-        
-        fetch('/api/courts')
-            .then(function(response) { return response.json(); })
+    var container = document.getElementById('courtsGrid');
+    if (!container) return;
+
+    // 1. Loading state
+    container.innerHTML =
+        '<div style="text-align: center; padding: 40px; color: #999;">Loading courts...</div>';
+
+    fetch('/api/courts')
+        .then(function (response) { return response.json(); })
+        .then(function (result) {
+            var courts = result.data || result;
+
+            // 2. Empty state
+            if (!Array.isArray(courts) || courts.length === 0) {
+                container.innerHTML =
+                    '<div style="text-align: center; padding: 60px; color: #999;">' +
+                    '<div style="font-size: 48px; margin-bottom: 20px;">🏟️</div>' +
+                    '<h3 style="color: #666;">No courts available at the moment</h3>' +
+                    '<p>Check back later or contact admin to add courts.</p>' +
+                    '</div>';
+                return;
+            }
+
+            // 3. Clear loading BEFORE render
+            container.innerHTML = '';
+
+            // 4. Render each court immediately
+            courts.forEach(function (court) {
+                var imgHtml = court.imageUrl
+                    ? '<div style="width: 100%; height: 180px; overflow: hidden; margin: -20px -20px 15px -20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">' +
+                      '<img src="' + court.imageUrl + '" alt="Court" style="max-width: 100%; max-height: 100%; object-fit: contain;" ' +
+                      'onerror="this.parentElement.style.display=\'none\'">' +
+                      '</div>'
+                    : '';
+
+                var card = document.createElement('div');
+                card.className = 'court-card';
+                card.innerHTML =
+                    imgHtml +
+                    '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
+                    '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
+                    '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
+                    '<div class="court-price">' +
+                    formatPrice(court.basePricePerHour || court.pricePerHour || 0) +
+                    '/hour</div>' +
+                    '<div class="court-review-stats loading-review">Loading reviews...</div>' +
+                    '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
+                    '<button onclick="viewCourtDetails(' + court.id + ')" class="book-btn" ' +
+                    'style="flex: 1; margin: 0; background: #2196f3;">📋 Reviews</button>' +
+                    '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
+                    'style="flex: 1; text-align: center; text-decoration: none; margin: 0; line-height: 40px;">Book Now</a>' +
+                    '</div>';
+
+                container.appendChild(card);
+
+                // 5. Load review stats AFTER card is in DOM
+                loadCourtReviewStats(court.id, card);
+            });
+        })
+        .catch(function (error) {
+            console.error('Error loading courts:', error);
+            container.innerHTML =
+                '<div style="text-align: center; padding: 40px; color: #f44336;">' +
+                '<div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>' +
+                '<h3>Error loading courts</h3>' +
+                '<p>Please refresh the page or try again later.</p>' +
+                '</div>';
+        });
+}
+
+    // Load court review stats
+    function loadCourtReviewStats(courtId, cardElement) {
+        fetch('/api/reviews/court/' + courtId + '/stats')
+            .then(function(response) { 
+                if (!response.ok) throw new Error('Failed to fetch');
+                return response.json(); 
+            })
             .then(function(result) {
-                var courts = result.data || result;
-                
-                if (!Array.isArray(courts) || courts.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; padding: 60px; color: #999;">' +
-                        '<div style="font-size: 48px; margin-bottom: 20px;">🏟️</div>' +
-                        '<h3 style="color: #666;">No courts available at the moment</h3>' +
-                        '<p>Check back later or contact admin to add courts.</p>' +
-                        '</div>';
-                    return;
-                }
-                
-                var html = '';
-                for (var i = 0; i < courts.length; i++) {
-                    var court = courts[i];
-                    var imgHtml = court.imageUrl ? 
-                        '<div style="width: 100%; height: 180px; overflow: hidden; margin: -20px -20px 15px -20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">' +
-                        '<img src="' + court.imageUrl + '" alt="Court" style="max-width: 100%; max-height: 100%; object-fit: contain;" ' +
-                        'onerror="this.parentElement.style.display=\'none\'">' +
-                        '</div>' : '';
-                    
-                    // Fetch review stats for this court
-                    fetch('/api/reviews/court/' + court.id + '/stats')
-                        .then(function(response) { return response.json(); })
-                        .then(function(statsResult) {
-                            var reviewBadge = '';
-                            if (statsResult && statsResult.data && statsResult.data.totalReviews > 0) {
-                                var avgRating = statsResult.data.averageRating.toFixed(1);
-                                var stars = '⭐'.repeat(Math.round(statsResult.data.averageRating));
-                                reviewBadge = '<div class="court-review-stats">' +
-                                    '<div class="review-stars">' +
-                                    '<span>' + stars + '</span>' +
-                                    '<span>' + avgRating + '</span>' +
-                                    '</div>' +
-                                    '<div class="review-count">(' + statsResult.data.totalReviews + ' đánh giá)</div>' +
-                                    '</div>';
-                            } else {
-                                reviewBadge = '<div class="no-reviews">🌟 Chưa có đánh giá</div>';
-                            }
-                            
-                            var courtCard = '<div class="court-card">' +
-                                imgHtml +
-                                '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
-                                '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
-                                '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
-                                '<div class="court-price">' + formatPrice(court.basePricePerHour || court.pricePerHour || 0) + '/hour</div>' +
-                                reviewBadge +
-                                '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
-                                '<button onclick="viewCourtDetails(' + court.id + ')" class="book-btn" ' +
-                                'style="flex: 1; margin: 0; background: #2196f3;">📋 Reviews</button>' +
-                                '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
-                                'style="flex: 1; text-align: center; text-decoration: none; margin: 0; line-height: 40px;">Book Now</a>' +
-                                '</div>' +
-                                '</div>';
-                            
-                            var tempContainer = document.createElement('div');
-                            tempContainer.innerHTML = courtCard;
-                            container.appendChild(tempContainer.firstChild);
-                        })
-                        .catch(function() {
-                            // If stats fail to load, just show without stats
-                            var courtCard = '<div class="court-card">' +
-                                imgHtml +
-                                '<div class="court-name">' + (court.name || 'Unnamed Court') + '</div>' +
-                                '<span class="court-type">' + (court.type || court.courtType || 'N/A') + '</span>' +
-                                '<div class="court-location">📍 ' + (court.location || 'Unknown location') + '</div>' +
-                                '<div class="court-price">' + formatPrice(court.basePricePerHour || court.pricePerHour || 0) + '/hour</div>' +
-                                '<div style="display: flex; gap: 10px; margin-top: 15px;">' +
-                                '<button onclick="viewCourtDetails(' + court.id + ')" class="book-btn" ' +
-                                'style="flex: 1; margin: 0; background: #2196f3;">📋 Reviews</button>' +
-                                '<a href="/booking?courtId=' + court.id + '" class="book-btn" ' +
-                                'style="flex: 1; text-align: center; text-decoration: none; margin: 0; line-height: 40px;">Book Now</a>' +
-                                '</div>' +
-                                '</div>';
-                            
-                            var tempContainer = document.createElement('div');
-                            tempContainer.innerHTML = courtCard;
-                            container.appendChild(tempContainer.firstChild);
-                        });
-                }
-                
-                // Clear loading message
-                if (courts.length > 0) {
-                    container.innerHTML = '';
+                var stats = result.data || result;
+                var reviewDiv = cardElement.querySelector('.court-review-stats');
+                if (reviewDiv) {
+                    var avgRating = stats.averageRating || 0;
+                    var totalReviews = stats.totalReviews || 0;
+                    var stars = '';
+                    for (var i = 0; i < 5; i++) {
+                        stars += i < Math.round(avgRating) ? '⭐' : '☆';
+                    }
+                    reviewDiv.innerHTML = stars + ' ' + avgRating.toFixed(1) + ' (' + totalReviews + ' reviews)';
+                    reviewDiv.classList.remove('loading-review');
                 }
             })
             .catch(function(error) {
-                console.error('Error loading courts:', error);
-                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #f44336;">' +
-                    '<div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>' +
-                    '<h3>Error loading courts</h3>' +
-                    '<p>Please refresh the page or try again later.</p>' +
-                    '</div>';
+                var reviewDiv = cardElement.querySelector('.court-review-stats');
+                if (reviewDiv) {
+                    reviewDiv.innerHTML = '⭐ No reviews yet';
+                    reviewDiv.classList.remove('loading-review');
+                }
             });
     }
     

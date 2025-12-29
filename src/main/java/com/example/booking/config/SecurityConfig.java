@@ -3,6 +3,7 @@ package com.example.booking.config;
 import com.example.booking.security.CustomAuthenticationFailureHandler;
 import com.example.booking.security.CustomAuthenticationSuccessHandler;
 import com.example.booking.security.CustomUserDetailsService;
+import com.example.booking.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +29,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationSuccessHandler successHandler;
     private final CustomAuthenticationFailureHandler failureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,13 +54,14 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
-                // Public endpoints
+                // Public endpoints - no authentication required
                 .requestMatchers(
                     "/auth/**",
+                    "/api/auth/**",
                     "/api/public/**",
                     "/api/courts",
                     "/api/courts/**",
-                    "/api/reviews/**",
+                    "/api/reviews/court/**",
                     "/",
                     "/login/**",
                     "/register/**",
@@ -67,12 +71,14 @@ public class SecurityConfig {
                     "/h2-console/**",
                     "/actuator/**"
                 ).permitAll()
+                // Review creation/update requires authentication
+                .requestMatchers("/api/reviews").authenticated()
                 // Admin endpoints
                 .requestMatchers("/api/admin/**", "/admin/**").hasRole("ADMIN")
                 // Court Owner endpoints
                 .requestMatchers("/api/court-owner/**").hasRole("COURT_OWNER")
                 // User endpoints - dashboard, booking pages, and API endpoints
-                .requestMatchers("/dashboard", "/booking", "/api/bookings/**", "/api/users/**", "/api/orders/**").authenticated()
+                .requestMatchers("/dashboard", "/booking", "/api/bookings/**", "/api/users/**").authenticated()
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )
@@ -93,7 +99,9 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
-            .authenticationProvider(authenticationProvider());
+            .authenticationProvider(authenticationProvider())
+            // Add JWT filter before UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         // For H2 Console
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
