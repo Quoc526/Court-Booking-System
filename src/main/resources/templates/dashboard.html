@@ -34,10 +34,77 @@
         .filter-group label { display: block; margin-bottom: 5px; font-weight: bold; }
 
         .courts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .court-card { background: #fff; border-radius: 10px; padding: 20px; }
-        .court-name { font-size: 1.5em; font-weight: bold; }
-        .court-type { background: #667eea; color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; }
-        .court-price { font-size: 1.3em; color: #764ba2; font-weight: bold; }
+        .court-card { 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .court-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .court-name { 
+            font-size: 1.4em; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .court-type { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: #fff; 
+            padding: 6px 16px; 
+            border-radius: 20px; 
+            font-size: 0.85em;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .court-location {
+            color: #666;
+            margin: 10px 0;
+            font-size: 0.95em;
+        }
+        .court-price { 
+            font-size: 1.4em; 
+            color: #4caf50; 
+            font-weight: bold;
+            margin: 12px 0;
+        }
+        .court-review-stats {
+            color: #999;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .court-review-stats.loading-review {
+            color: #ccc;
+        }
+        .court-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .court-status.active {
+            background: #4caf50;
+            color: white;
+        }
+        .court-status.inactive {
+            background: #f44336;
+            color: white;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
 
         .book-btn { background: #667eea; color: #fff; padding: 10px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
 
@@ -86,20 +153,20 @@
     <div class="filters">
         <div class="filter-group">
             <label>Loại sân:</label>
-            <select>
-                <option>Tất cả</option>
-                <option>Bóng đá</option>
-                <option>Cầu lông</option>
-                <option>Tennis</option>
-                <option>Futsal</option>
+            <select id="courtTypeFilter" onchange="filterCourts()">
+                <option value="ALL">Tất cả</option>
+                <option value="FOOTBALL">Bóng đá</option>
+                <option value="BADMINTON">Cầu lông</option>
+                <option value="TENNIS">Tennis</option>
+                <option value="FUTSAL">Futsal</option>
             </select>
         </div>
         <div class="filter-group">
             <label>Trạng thái:</label>
-            <select>
-                <option>Tất cả</option>
-                <option>Đang hoạt động</option>
-                <option>Ngừng hoạt động</option>
+            <select id="statusFilter" onchange="filterCourts()">
+                <option value="ALL">Tất cả</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
             </select>
         </div>
     </div>
@@ -126,6 +193,103 @@
     </div>
 </div>
 
+<div id="owner-courts-tab" class="tab-content" th:if="${isCourtOwner}">
+    <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #333;">🏗️ Sân của tôi</h2>
+        <button onclick="showOwnerAddCourtModal()" class="add-court-btn">➕ Thêm sân mới</button>
+    </div>
+    <div class="bookings-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên sân</th>
+                    <th>Loại sân</th>
+                    <th>Địa điểm</th>
+                    <th>Giá/giờ</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="ownerCourtsTableBody">
+                <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h3 style="margin-top: 40px; margin-bottom: 20px; color: #333;">📅 Lịch đặt sân của tôi</h3>
+    <div class="bookings-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã đặt</th>
+                    <th>Sân</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày</th>
+                    <th>Giờ</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="ownerBookingsTableBody">
+                <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="revenue-tab" class="tab-content" th:if="${isCourtOwner}">
+    <h2 style="margin-bottom: 30px; color: #333;">💰 Doanh thu & Thống kê</h2>
+    
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-value" id="ownerTotalRevenue" style="color: #4caf50;">0 ₫</div>
+            <div class="stat-label">Tổng doanh thu</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="ownerMonthlyRevenue" style="color: #2196f3;">0 ₫</div>
+            <div class="stat-label">Doanh thu tháng này</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="ownerTotalBookings" style="color: #ff9800;">0</div>
+            <div class="stat-label">Tổng lượt đặt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="ownerActiveBookings" style="color: #9c27b0;">0</div>
+            <div class="stat-label">Đang hoạt động</div>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 30px;">
+        <div style="background: white; padding: 20px; border-radius: 10px;">
+            <h3 style="margin-bottom: 15px;">📈 Biểu đồ doanh thu 7 ngày</h3>
+            <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+        </div>
+        <div style="background: white; padding: 20px; border-radius: 10px;">
+            <h3 style="margin-bottom: 15px;">📊 Trạng thái đặt sân</h3>
+            <canvas id="bookingStatusChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+        <h3 style="margin-bottom: 15px;">🏟️ Doanh thu theo sân</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Tên sân</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Số lượt đặt</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Doanh thu tháng</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Tổng doanh thu</th>
+                </tr>
+            </thead>
+            <tbody id="revenueByCourtTableBody">
+                <tr><td colspan="4" style="text-align: center; padding: 40px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div id="admin-tab" class="tab-content" th:if="${isAdmin}">
     <div class="admin-stats">
         <div class="stat-card">
@@ -147,8 +311,29 @@
     </div>
 </div>
 
+<div id="reviews-tab" class="tab-content">
+    <h2 style="margin-bottom: 20px; color: #333;">⭐ Đánh giá của tôi</h2>
+    <div class="bookings-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sân</th>
+                    <th>Đánh giá</th>
+                    <th>Nội dung</th>
+                    <th>Ngày</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="reviewsTableBody">
+                <tr><td colspan="5" style="text-align: center; padding: 40px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>

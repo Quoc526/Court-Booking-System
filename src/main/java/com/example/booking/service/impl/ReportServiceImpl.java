@@ -5,7 +5,6 @@ import com.example.booking.entity.Booking;
 import com.example.booking.entity.enums.BookingStatus;
 import com.example.booking.repository.BookingRepository;
 import com.example.booking.service.ReportService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,10 +14,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
     
     private final BookingRepository bookingRepository;
+
+    public ReportServiceImpl(BookingRepository bookingRepository) {
+        this.bookingRepository = bookingRepository;
+    }
     
     @Override
     public RevenueReportDTO getRevenueReport(LocalDate from, LocalDate to) {
@@ -41,5 +43,10 @@ public class ReportServiceImpl implements ReportService {
             .totalBookings(totalBookings)
             .averageBookingValue(averageBookingValue)
             .build();
+        RevenueReportDTO report = new RevenueReportDTO();
+        report.setTotalRevenue(totalRevenue);
+        report.setTotalBookings(totalBookings);
+        report.setAverageBookingValue(averageBookingValue);
+        return report;
     }
 }

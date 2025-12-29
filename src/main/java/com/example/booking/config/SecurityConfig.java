@@ -3,7 +3,7 @@ package com.example.booking.config;
 import com.example.booking.security.CustomAuthenticationFailureHandler;
 import com.example.booking.security.CustomAuthenticationSuccessHandler;
 import com.example.booking.security.CustomUserDetailsService;
-import lombok.RequiredArgsConstructor;
+import com.example.booking.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,16 +17,24 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
     
     private final CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationSuccessHandler successHandler;
     private final CustomAuthenticationFailureHandler failureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService, CustomAuthenticationSuccessHandler successHandler, CustomAuthenticationFailureHandler failureHandler, JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.userDetailsService = userDetailsService;
+        this.successHandler = successHandler;
+        this.failureHandler = failureHandler;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,13 +59,14 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
-                // Public endpoints
+                // Public endpoints - no authentication required
                 .requestMatchers(
                     "/auth/**",
+                    "/api/auth/**",
                     "/api/public/**",
                     "/api/courts",
                     "/api/courts/**",
-                    "/api/reviews/**",
+                    "/api/reviews/court/**",
                     "/",
                     "/login/**",
                     "/register/**",
@@ -67,6 +76,8 @@ public class SecurityConfig {
                     "/h2-console/**",
                     "/actuator/**"
                 ).permitAll()
+                // Review creation/update requires authentication
+                .requestMatchers("/api/reviews").authenticated()
                 // Admin endpoints
                 .requestMatchers("/api/admin/**", "/admin/**").hasRole("ADMIN")
                 // Court Owner endpoints
@@ -93,7 +104,9 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
-            .authenticationProvider(authenticationProvider());
+            .authenticationProvider(authenticationProvider())
+            // Add JWT filter before UsernamePasswordAuthenticationFilter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         // For H2 Console
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));

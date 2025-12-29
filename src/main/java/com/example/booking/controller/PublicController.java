@@ -11,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/public")
-@RequiredArgsConstructor
 public class PublicController {
     
     private final ReviewService reviewService;
+
+    public PublicController(ReviewService reviewService) {
+        this.reviewService = reviewService;
+    }
     
     @GetMapping("/reviews")
     public ResponseEntity<ApiResponse<List<ReviewResponseDTO>>> getReviews(
@@ -28,3 +31,4 @@ public class PublicController {
         return ResponseEntity.ok(ApiResponse.success(reviews));
     }
 }
+

@@ -2,7 +2,6 @@ package com.example.booking.entity;
 
 import com.example.booking.entity.enums.ScheduleStatus;
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,11 +21,6 @@ import java.time.LocalTime;
         @Index(name = "idx_schedule_court_date", columnList = "court_id, date")
     }
 )
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Schedule extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,8 +41,19 @@ public class Schedule extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    @Builder.Default
     private ScheduleStatus status = ScheduleStatus.AVAILABLE;
+
+    public Schedule() {
+    }
+
+    public Schedule(Court court, LocalDate date, LocalTime startTime, LocalTime endTime, BigDecimal price, ScheduleStatus status) {
+        this.court = court;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.price = price;
+        this.status = status;
+    }
     
     @PrePersist
     @PreUpdate
@@ -56,5 +61,53 @@ public class Schedule extends BaseEntity {
         if (price == null && court != null) {
             price = court.getBasePricePerHour();
         }
+    }
+
+    public Court getCourt() {
+        return court;
+    }
+
+    public void setCourt(Court court) {
+        this.court = court;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public ScheduleStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ScheduleStatus status) {
+        this.status = status;
     }
 }

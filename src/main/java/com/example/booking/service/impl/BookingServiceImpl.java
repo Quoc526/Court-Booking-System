@@ -11,25 +11,24 @@ import com.example.booking.exception.ResourceNotFoundException;
 import com.example.booking.exception.UnauthorizedException;
 import com.example.booking.repository.*;
 import com.example.booking.service.BookingService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class BookingServiceImpl implements BookingService {
+    
+    private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
     
     private final BookingRepository bookingRepository;
     private final ScheduleRepository scheduleRepository;
@@ -39,16 +38,24 @@ public class BookingServiceImpl implements BookingService {
     
     @Value("${booking.cancellation.min-hours-before:2}")
     private int minHoursBeforeCancellation;
+
+    public BookingServiceImpl(BookingRepository bookingRepository, ScheduleRepository scheduleRepository, CourtRepository courtRepository, UserRepository userRepository, SubCourtRepository subCourtRepository) {
+        this.bookingRepository = bookingRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.courtRepository = courtRepository;
+        this.userRepository = userRepository;
+        this.subCourtRepository = subCourtRepository;
+    }
     
     @Override
     @Transactional
     public BookingResponseDTO placeBooking(BookingRequestDTO request, Long userId) {
         // Fetch user
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId, "User ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         
         // Fetch court
-        Court court = courtRepository.findById(request.getCourtId())
+        Court court = courtRepository.findById(Objects.requireNonNull(request.getCourtId(), "Court ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("Court", "id", request.getCourtId()));
         
         // Fetch schedule with pessimistic lock to prevent concurrent booking
@@ -68,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
         // Handle sub-court if provided
         SubCourt subCourt = null;
         if (request.getSubCourtId() != null) {
-            subCourt = subCourtRepository.findById(request.getSubCourtId())
+            subCourt = subCourtRepository.findById(Objects.requireNonNull(request.getSubCourtId(), "SubCourt ID cannot be null"))
                 .orElseThrow(() -> new ResourceNotFoundException("SubCourt", "id", request.getSubCourtId()));
             
             // Verify sub-court belongs to the court
@@ -106,6 +113,16 @@ public class BookingServiceImpl implements BookingService {
             
             // Calculate total price
             booking.calculateTotalPrice();
+            Booking booking = new Booking(
+                user,
+                court,
+                finalSubCourt,
+                schedule,
+                LocalDateTime.now(),
+                BookingStatus.PENDING,
+                schedule.getPrice(),
+                request.getNote()
+            );
             
             // Mark schedule as booked
             schedule.setStatus(ScheduleStatus.BOOKED);
@@ -271,27 +288,27 @@ public class BookingServiceImpl implements BookingService {
     
     @Override
     public Booking findEntityById(Long id) {
-        return bookingRepository.findById(id)
+        return bookingRepository.findById(Objects.requireNonNull(id, "Booking ID cannot be null"))
             .orElseThrow(() -> new ResourceNotFoundException("Booking", "id", id));
     }
     
     @Override
     public BookingResponseDTO convertToDTO(Booking booking) {
-        return BookingResponseDTO.builder()
-            .id(booking.getId())
-            .userId(booking.getUser().getId())
-            .userName(booking.getUser().getFullName())
-            .courtId(booking.getCourt().getId())
-            .courtName(booking.getCourt().getName())
-            .subCourtId(booking.getSubCourt() != null ? booking.getSubCourt().getId() : null)
-            .subCourtName(booking.getSubCourt() != null ? booking.getSubCourt().getName() : null)
-            .scheduleId(booking.getSchedule().getId())
-            .scheduleDate(booking.getSchedule().getDate().toString())
-            .scheduleTime(booking.getSchedule().getStartTime() + " - " + booking.getSchedule().getEndTime())
-            .bookingTime(booking.getBookingTime())
-            .status(booking.getStatus().name())
-            .totalPrice(booking.getTotalPrice())
-            .note(booking.getNote())
-            .build();
+        BookingResponseDTO dto = new BookingResponseDTO();
+        dto.setId(booking.getId());
+        dto.setUserId(booking.getUser().getId());
+        dto.setUserName(booking.getUser().getFullName());
+        dto.setCourtId(booking.getCourt().getId());
+        dto.setCourtName(booking.getCourt().getName());
+        dto.setSubCourtId(booking.getSubCourt() != null ? booking.getSubCourt().getId() : null);
+        dto.setSubCourtName(booking.getSubCourt() != null ? booking.getSubCourt().getName() : null);
+        dto.setScheduleId(booking.getSchedule().getId());
+        dto.setScheduleDate(booking.getSchedule().getDate().toString());
+        dto.setScheduleTime(booking.getSchedule().getStartTime() + " - " + booking.getSchedule().getEndTime());
+        dto.setBookingTime(booking.getBookingTime());
+        dto.setStatus(booking.getStatus().name());
+        dto.setTotalPrice(booking.getTotalPrice());
+        dto.setNote(booking.getNote());
+        return dto;
     }
 }
