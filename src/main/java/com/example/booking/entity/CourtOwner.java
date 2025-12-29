@@ -26,14 +26,13 @@ public class CourtOwner extends BaseEntity {
     private String phoneNumber;
     
     @Column(length = 200)
-    private String businessName; // Tên doanh nghiệp
+    private String businessName;
     
     @Column(length = 500)
-    private String businessAddress; // Địa chỉ kinh doanh
-    
-    @Column(length = 50)
-    private String taxCode; // Mã số thuế
-    
+    private String businessAddress;
+
+
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

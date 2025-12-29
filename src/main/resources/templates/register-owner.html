@@ -196,107 +196,114 @@
     </style>
 </head>
 <body>
-<div class="register-container">
-    <div class="logo">
-        <h1>🏢 Court Booking</h1>
-        <p>Đăng ký tài khoản chủ sân</p>
-    </div>
-
-    <div class="error-message" id="errorMessage"></div>
-    <div class="success-message" id="successMessage"></div>
-
-    <form id="registerForm">
-        <div class="form-group">
-            <label for="fullName">Họ và tên <span class="required">*</span></label>
-            <input type="text" id="fullName" required>
+    <div class="register-container">
+        <div class="logo">
+            <h1>🏢 Court Booking</h1>
+            <p>Register Court Owner Account</p>
         </div>
-
-        <div class="form-group">
-            <label for="email">Email <span class="required">*</span></label>
-            <input type="email" id="email" required>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Mật khẩu <span class="required">*</span></label>
-            <input type="password" id="password" minlength="6" required>
-        </div>
-
-        <div class="form-group">
-            <label for="phoneNumber">Số điện thoại <span class="required">*</span></label>
-            <input type="tel" id="phoneNumber" required>
-        </div>
-
-        <div class="business-section">
-            <h3>Thông tin kinh doanh</h3>
-
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <form id="registerForm">
             <div class="form-group">
-                <label for="businessName">Tên cơ sở <span class="required">*</span></label>
-                <input type="text" id="businessName" required>
+                <label for="fullName">Full Name <span class="required">*</span></label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
             </div>
-
+            
             <div class="form-group">
-                <label for="businessAddress">Địa chỉ cơ sở <span class="required">*</span></label>
-                <textarea id="businessAddress" required></textarea>
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
             </div>
-
+            
             <div class="form-group">
-                <label for="taxCode">Mã số thuế</label>
-                <input type="text" id="taxCode">
+                <label for="password">Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="Enter password (min 6 characters)" minlength="6">
             </div>
+            
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="Enter your phone number">
+            </div>
+            
+            <div class="business-section">
+                <h3>Business Information</h3>
+                
+                <div class="form-group">
+                    <label for="businessName">Business Name <span class="required">*</span></label>
+                    <input type="text" id="businessName" name="businessName" required placeholder="Enter business name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="businessAddress">Business Address <span class="required">*</span></label>
+                    <textarea id="businessAddress" name="businessAddress" required placeholder="Enter business address"></textarea>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-register">Register as Court Owner</button>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
         </div>
-
-        <button type="submit" class="btn-register">Đăng ký chủ sân</button>
-    </form>
-
-    <div class="login-link">
-        Đã có tài khoản? <a href="/login">Đăng nhập</a>
+        
+        <div class="user-link">
+            <a href="/register">
+                <span style="font-size: 20px;">🎾</span>
+                Customer Registration
+            </a>
+        </div>
+        
+        <div class="back-home-link">
+            <a href="/">Back to Home</a>
+        </div>
     </div>
-
-    <div class="user-link">
-        <a href="/register">🎾 Đăng ký khách hàng</a>
-    </div>
-
-    <div class="back-home-link">
-        <a href="/">Quay về trang chủ</a>
-    </div>
-</div>
-
-<script>
-    const registerForm = document.getElementById('registerForm');
-    const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
-
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorMessage.style.display = 'none';
-        successMessage.style.display = 'none';
-
-        const data = {
-            fullName: fullName.value,
-            email: email.value,
-            password: password.value,
-            phoneNumber: phoneNumber.value,
-            roleType: 'COURT_OWNER',
-            businessName: businessName.value,
-            businessAddress: businessAddress.value,
-            taxCode: taxCode.value
-        };
-
-        try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const json = await res.json();
-
-            if (res.ok) {
-                successMessage.textContent = 'Đăng ký thành công! Chuyển hướng đăng nhập...';
-                successMessage.style.display = 'block';
-                setTimeout(() => location.href = '/login', 1500);
-            } else {
-                errorMessage.textContent = json.message || 'Đăng ký thất bại';
+    
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        
+        // Handle form submission
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                roleType: 'COURT_OWNER',
+                businessName: document.getElementById('businessName').value,
+                businessAddress: document.getElementById('businessAddress').value,
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    successMessage.textContent = 'Registration successful! Redirecting to login...';
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
+                } else {
+                    errorMessage.textContent = data.message || 'Registration failed. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Connection error. Please try again later.';
                 errorMessage.style.display = 'block';
             }
         } catch {

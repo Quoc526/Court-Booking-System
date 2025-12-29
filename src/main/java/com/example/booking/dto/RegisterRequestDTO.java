@@ -44,5 +44,4 @@ public class RegisterRequestDTO {
     // Business fields for COURT_OWNER
     private String businessName;
     private String businessAddress;
-    private String taxCode;
 }

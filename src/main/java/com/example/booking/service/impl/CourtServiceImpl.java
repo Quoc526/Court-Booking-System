@@ -37,14 +37,23 @@ public class CourtServiceImpl implements CourtService {
         if (type != null || location != null) {
             courts = courtRepository.findByFilters(type, location, CourtStatus.ACTIVE);
         } else {
-            courts = courtRepository.findByStatus(CourtStatus.ACTIVE);
+            courts = courtRepository.findAll();
         }
         
         return courts.stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<CourtResponseDTO> findCourts(CourtStatus status, String type) {
+        List<Court> courts = courtRepository.findByFilters(status, type);
+
+        return courts.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public CourtResponseDTO getCourtById(Long id) {
         Court court = findEntityById(id);

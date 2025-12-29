@@ -62,10 +62,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-            HttpStatus.FORBIDDEN.value(),
+            HttpStatus.CREATED.value(),
             "Access denied: " + ex.getMessage()
         );
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(error, HttpStatus.OK);
     }
     
     @ExceptionHandler(BadCredentialsException.class)
@@ -82,12 +82,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
         Map<String, String> validationErrors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            validationErrors.put(fieldName, errorMessage);
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            validationErrors.put(error.getField(), error.getDefaultMessage());
         });
-        
+
+        String firstMessage = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Validation failed");
+
         ErrorResponse error = ErrorResponse.builder()
             .status(HttpStatus.BAD_REQUEST.value())
             .message("Validation failed")

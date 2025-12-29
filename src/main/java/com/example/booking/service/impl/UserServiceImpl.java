@@ -48,7 +48,6 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(request.getPhoneNumber())
                 .businessName(request.getBusinessName())
                 .businessAddress(request.getBusinessAddress())
-                .taxCode(request.getTaxCode())
                 .status(UserStatus.ACTIVE)
                 .build();
             

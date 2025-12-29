@@ -114,7 +114,6 @@ public class DataSeeder implements CommandLineRunner {
             .phoneNumber("0912345678")
             .businessName("Công ty TNHH Sân Thể Thao A")
             .businessAddress("123 Đường Giải Phóng, Hai Bà Trưng, Hà Nội")
-            .taxCode("0123456789")
             .status(UserStatus.ACTIVE)
             .build();
         owner = courtOwnerRepository.save(owner);
