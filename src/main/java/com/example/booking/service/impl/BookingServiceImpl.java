@@ -100,19 +100,6 @@ public class BookingServiceImpl implements BookingService {
         
         try {
             // Create booking with PENDING status (owner needs to approve)
-            Booking booking = Booking.builder()
-                .user(user)
-                .court(court)
-                .subCourt(finalSubCourt)
-                .schedule(schedule)
-                .bookingTime(LocalDateTime.now())
-                .status(BookingStatus.PENDING)
-                .note(request.getNote())
-                .totalPrice(schedule.getPrice())
-                .build();
-            
-            // Calculate total price
-            booking.calculateTotalPrice();
             Booking booking = new Booking(
                 user,
                 court,
@@ -123,6 +110,8 @@ public class BookingServiceImpl implements BookingService {
                 schedule.getPrice(),
                 request.getNote()
             );
+            // Calculate total price
+            booking.calculateTotalPrice();
             
             // Mark schedule as booked
             schedule.setStatus(ScheduleStatus.BOOKED);

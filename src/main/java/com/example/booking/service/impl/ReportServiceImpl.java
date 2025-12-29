@@ -38,11 +38,6 @@ public class ReportServiceImpl implements ReportService {
             ? totalRevenue.divide(BigDecimal.valueOf(totalBookings), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
         
-        return RevenueReportDTO.builder()
-            .totalRevenue(totalRevenue)
-            .totalBookings(totalBookings)
-            .averageBookingValue(averageBookingValue)
-            .build();
         RevenueReportDTO report = new RevenueReportDTO();
         report.setTotalRevenue(totalRevenue);
         report.setTotalBookings(totalBookings);

@@ -46,7 +46,6 @@ public class Booking extends BaseEntity {
     private String note;
     
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
     
     /**
@@ -57,7 +56,7 @@ public class Booking extends BaseEntity {
             ? schedule.getPrice() 
             : BigDecimal.ZERO;
         this.totalPrice = schedulePrice;
-    private List<Review> reviews = new ArrayList<>();
+    }
 
     public Booking() {
     }
