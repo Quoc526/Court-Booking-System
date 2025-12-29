@@ -107,7 +107,6 @@ PUT  /api/admin/courts/{id}        # Cập nhật sân
 7. **Bill** - Hóa đơn thanh toán
 8. **Order** - Đơn hàng dịch vụ
 9. **OrderDetail** - Chi tiết đơn hàng
-10. **ServiceItem** - Dịch vụ bổ sung (nước, cho thuê dụng cụ, etc)
 
 ### Data mẫu (DataSeeder):
 - 2 roles: ROLE_ADMIN, ROLE_USER
