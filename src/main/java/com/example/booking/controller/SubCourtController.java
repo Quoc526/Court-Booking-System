@@ -4,7 +4,6 @@ import com.example.booking.dto.ApiResponse;
 import com.example.booking.dto.SubCourtRequestDTO;
 import com.example.booking.dto.SubCourtResponseDTO;
 import com.example.booking.service.SubCourtService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,10 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/subcourts")
-@RequiredArgsConstructor
 public class SubCourtController {
 
     private final SubCourtService subCourtService;
+
+    public SubCourtController(SubCourtService subCourtService) {
+        this.subCourtService = subCourtService;
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('COURT_OWNER')")

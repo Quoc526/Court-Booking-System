@@ -5,7 +5,6 @@ import com.example.booking.dto.BookingResponseDTO;
 import com.example.booking.entity.User;
 import com.example.booking.service.BookingService;
 import com.example.booking.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +12,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 public class UserController {
     
     private final BookingService bookingService;
     private final UserService userService;
+
+    public UserController(BookingService bookingService, UserService userService) {
+        this.bookingService = bookingService;
+        this.userService = userService;
+    }
     
     @GetMapping("/{userId}/bookings")
     public ResponseEntity<ApiResponse<List<BookingResponseDTO>>> getUserBookings(

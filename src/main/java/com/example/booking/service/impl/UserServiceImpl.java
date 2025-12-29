@@ -11,7 +11,6 @@ import com.example.booking.repository.CourtOwnerRepository;
 import com.example.booking.repository.RoleRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +21,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     
     private final UserRepository userRepository;
     private final CourtOwnerRepository courtOwnerRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, CourtOwnerRepository courtOwnerRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.courtOwnerRepository = courtOwnerRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     
     @Override
     @Transactional
@@ -41,39 +46,38 @@ public class UserServiceImpl implements UserService {
         
         // If COURT_OWNER, save to court_owners table
         if ("COURT_OWNER".equals(request.getRoleType())) {
-            CourtOwner owner = CourtOwner.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber())
-                .businessName(request.getBusinessName())
-                .businessAddress(request.getBusinessAddress())
-                .status(UserStatus.ACTIVE)
-                .build();
+            CourtOwner owner = new CourtOwner();
+            owner.setFullName(request.getFullName());
+            owner.setEmail(request.getEmail());
+            owner.setPassword(passwordEncoder.encode(request.getPassword()));
+            owner.setPhoneNumber(request.getPhoneNumber());
+            owner.setBusinessName(request.getBusinessName());
+            owner.setBusinessAddress(request.getBusinessAddress());
+            owner.setTaxCode(request.getTaxCode());
+            owner.setStatus(UserStatus.ACTIVE);
             
             owner = courtOwnerRepository.save(owner);
             
-            return UserResponseDTO.builder()
-                .id(owner.getId())
-                .fullName(owner.getFullName())
-                .email(owner.getEmail())
-                .phoneNumber(owner.getPhoneNumber())
-                .status(owner.getStatus().name())
-                .roles(java.util.Set.of("ROLE_COURT_OWNER"))
-                .build();
+            UserResponseDTO response = new UserResponseDTO();
+            response.setId(owner.getId());
+            response.setFullName(owner.getFullName());
+            response.setEmail(owner.getEmail());
+            response.setPhoneNumber(owner.getPhoneNumber());
+            response.setStatus(owner.getStatus().name());
+            response.setRoles(java.util.Set.of("ROLE_COURT_OWNER"));
+            return response;
         }
         
         // Otherwise save to users table
         Role role = roleRepository.findByName("ROLE_USER")
             .orElseThrow(() -> new BookingException("Role ROLE_USER not found"));
         
-        User user = User.builder()
-            .fullName(request.getFullName())
-            .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .phoneNumber(request.getPhoneNumber())
-            .status(UserStatus.ACTIVE)
-            .build();
+        User user = new User();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setStatus(UserStatus.ACTIVE);
         
         user.addRole(role);
         user = userRepository.save(user);
@@ -96,15 +100,15 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public UserResponseDTO convertToDTO(User user) {
-        return UserResponseDTO.builder()
-            .id(user.getId())
-            .fullName(user.getFullName())
-            .email(user.getEmail())
-            .phoneNumber(user.getPhoneNumber())
-            .status(user.getStatus().name())
-            .roles(user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet()))
-            .build();
+        UserResponseDTO response = new UserResponseDTO();
+        response.setId(user.getId());
+        response.setFullName(user.getFullName());
+        response.setEmail(user.getEmail());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setStatus(user.getStatus().name());
+        response.setRoles(user.getRoles().stream()
+            .map(Role::getName)
+            .collect(Collectors.toSet()));
+        return response;
     }
 }

@@ -7,7 +7,6 @@ import com.example.booking.repository.CourtRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.service.*;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
-@RequiredArgsConstructor
 public class AdminController {
     
     private final CourtService courtService;
@@ -32,6 +30,15 @@ public class AdminController {
     private final CourtRepository courtRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+
+    public AdminController(CourtService courtService, BookingService bookingService, ReportService reportService, CourtRepository courtRepository, BookingRepository bookingRepository, UserRepository userRepository) {
+        this.courtService = courtService;
+        this.bookingService = bookingService;
+        this.reportService = reportService;
+        this.courtRepository = courtRepository;
+        this.bookingRepository = bookingRepository;
+        this.userRepository = userRepository;
+    }
     
     // Court Management
     @GetMapping("/courts")

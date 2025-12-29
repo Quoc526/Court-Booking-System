@@ -3,8 +3,8 @@ package com.example.booking.config;
 import com.example.booking.entity.*;
 import com.example.booking.entity.enums.*;
 import com.example.booking.repository.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,12 +14,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class DataSeeder implements CommandLineRunner {
+    
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
     
     private final UserRepository userRepository;
     private final CourtOwnerRepository courtOwnerRepository;
@@ -30,6 +31,15 @@ public class DataSeeder implements CommandLineRunner {
     
     @Value("${booking.seeding.enabled:true}")
     private boolean seedingEnabled;
+
+    public DataSeeder(UserRepository userRepository, CourtOwnerRepository courtOwnerRepository, RoleRepository roleRepository, CourtRepository courtRepository, ScheduleRepository scheduleRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.courtOwnerRepository = courtOwnerRepository;
+        this.roleRepository = roleRepository;
+        this.courtRepository = courtRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     
     @Override
     public void run(String... args) throws Exception {
@@ -70,10 +80,7 @@ public class DataSeeder implements CommandLineRunner {
     private Role createRole(String name, String description) {
         // Check if role already exists
         return roleRepository.findByName(name).orElseGet(() -> {
-            Role role = Role.builder()
-                .name(name)
-                .description(description)
-                .build();
+            Role role = new Role(name, description);
             role = roleRepository.save(role);
             log.info("Created role: {}", name);
             return role;
@@ -81,41 +88,44 @@ public class DataSeeder implements CommandLineRunner {
     }
     
     private void createAdminUser(Role adminRole) {
-        User admin = User.builder()
-            .fullName("Administrator")
-            .email("admin@example.com")
-            .password(passwordEncoder.encode("strongpassword"))
-            .phoneNumber("0123456789")
-            .status(UserStatus.ACTIVE)
-            .build();
+        User admin = new User(
+            "Administrator",
+            "admin@example.com",
+            passwordEncoder.encode("strongpassword"),
+            "0123456789",
+            UserStatus.ACTIVE,
+            new HashSet<>()
+        );
         admin.addRole(adminRole);
         userRepository.save(admin);
         log.info("Created admin user: admin@example.com / strongpassword");
     }
     
     private void createSampleUser(Role userRole) {
-        User user = User.builder()
-            .fullName("John Doe")
-            .email("user@example.com")
-            .password(passwordEncoder.encode("password123"))
-            .phoneNumber("0987654321")
-            .status(UserStatus.ACTIVE)
-            .build();
+        User user = new User(
+            "John Doe",
+            "user@example.com",
+            passwordEncoder.encode("password123"),
+            "0987654321",
+            UserStatus.ACTIVE,
+            new HashSet<>()
+        );
         user.addRole(userRole);
         userRepository.save(user);
         log.info("Created sample user: user@example.com / password123");
     }
     
     private CourtOwner createCourtOwner() {
-        CourtOwner owner = CourtOwner.builder()
-            .fullName("Nguyễn Văn A")
-            .email("owner@example.com")
-            .password(passwordEncoder.encode("owner123"))
-            .phoneNumber("0912345678")
-            .businessName("Công ty TNHH Sân Thể Thao A")
-            .businessAddress("123 Đường Giải Phóng, Hai Bà Trưng, Hà Nội")
-            .status(UserStatus.ACTIVE)
-            .build();
+        CourtOwner owner = new CourtOwner(
+            "Nguyễn Văn A",
+            "owner@example.com",
+            passwordEncoder.encode("owner123"),
+            "0912345678",
+            "Công ty TNHH Sân Thể Thao A",
+            "123 Đường Giải Phóng, Hai Bà Trưng, Hà Nội",
+            "0123456789",
+            UserStatus.ACTIVE
+        );
         owner = courtOwnerRepository.save(owner);
         log.info("Created court owner: owner@example.com / owner123");
         return owner;
@@ -144,14 +154,14 @@ public class DataSeeder implements CommandLineRunner {
                     LocalTime startTime = LocalTime.of(hour, 0);
                     LocalTime endTime = LocalTime.of(hour + 1, 0);
                     
-                    Schedule schedule = Schedule.builder()
-                        .court(court)
-                        .date(date)
-                        .startTime(startTime)
-                        .endTime(endTime)
-                        .price(court.getBasePricePerHour())
-                        .status(ScheduleStatus.AVAILABLE)
-                        .build();
+                    Schedule schedule = new Schedule(
+                        court,
+                        date,
+                        startTime,
+                        endTime,
+                        court.getBasePricePerHour(),
+                        ScheduleStatus.AVAILABLE
+                    );
                     
                     scheduleRepository.save(schedule);
                     scheduleCount++;

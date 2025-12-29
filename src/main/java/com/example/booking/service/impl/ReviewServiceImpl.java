@@ -13,7 +13,6 @@ import com.example.booking.repository.BookingRepository;
 import com.example.booking.repository.ReviewRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.service.ReviewService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +20,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
     
     private final ReviewRepository reviewRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+
+    public ReviewServiceImpl(ReviewRepository reviewRepository, BookingRepository bookingRepository, UserRepository userRepository) {
+        this.reviewRepository = reviewRepository;
+        this.bookingRepository = bookingRepository;
+        this.userRepository = userRepository;
+    }
     
     @Override
     @Transactional
@@ -56,14 +60,14 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         // Create review
-        Review review = Review.builder()
-            .booking(booking)
-            .user(user)
-            .rating(request.getRating())
-            .comment(request.getComment())
-            .imageUrl(request.getImageUrl())
-            .status(ReviewStatus.APPROVED) // Auto-approve for simplicity
-            .build();
+        Review review = new Review(
+            booking,
+            user,
+            request.getRating(),
+            request.getComment(),
+            request.getImageUrl(),
+            ReviewStatus.APPROVED // Auto-approve for simplicity
+        );
         
         review = reviewRepository.save(review);
         return convertToDTO(review);
@@ -87,16 +91,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
     
     private ReviewResponseDTO convertToDTO(Review review) {
-        return ReviewResponseDTO.builder()
-            .id(review.getId())
-            .bookingId(review.getBooking().getId())
-            .userId(review.getUser().getId())
-            .userName(review.getUser().getFullName())
-            .rating(review.getRating())
-            .comment(review.getComment())
-            .imageUrl(review.getImageUrl())
-            .status(review.getStatus().name())
-            .createdAt(review.getCreatedAt())
-            .build();
+        ReviewResponseDTO dto = new ReviewResponseDTO();
+        dto.setId(review.getId());
+        dto.setBookingId(review.getBooking().getId());
+        dto.setUserId(review.getUser().getId());
+        dto.setUserName(review.getUser().getFullName());
+        dto.setRating(review.getRating());
+        dto.setComment(review.getComment());
+        dto.setImageUrl(review.getImageUrl());
+        dto.setStatus(review.getStatus().name());
+        dto.setCreatedAt(review.getCreatedAt());
+        return dto;
     }
 }

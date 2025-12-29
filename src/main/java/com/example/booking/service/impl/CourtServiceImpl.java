@@ -14,7 +14,6 @@ import com.example.booking.repository.CourtOwnerRepository;
 import com.example.booking.repository.CourtRepository;
 import com.example.booking.repository.UserRepository;
 import com.example.booking.service.CourtService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +21,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CourtServiceImpl implements CourtService {
     
     private final CourtRepository courtRepository;
     private final CourtOwnerRepository courtOwnerRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+
+    public CourtServiceImpl(CourtRepository courtRepository, CourtOwnerRepository courtOwnerRepository, BookingRepository bookingRepository, UserRepository userRepository) {
+        this.courtRepository = courtRepository;
+        this.courtOwnerRepository = courtOwnerRepository;
+        this.bookingRepository = bookingRepository;
+        this.userRepository = userRepository;
+    }
     
     @Override
     public List<CourtResponseDTO> getAllCourts(String type, String location) {
@@ -63,17 +68,18 @@ public class CourtServiceImpl implements CourtService {
     @Override
     @Transactional
     public CourtResponseDTO createCourt(CourtRequestDTO request) {
-        Court court = Court.builder()
-            .name(request.getName())
-            .type(request.getType())
-            .location(request.getLocation())
-            .description(request.getDescription())
-            .basePricePerHour(request.getBasePricePerHour())
-            .imageUrl(request.getImageUrl())
-            .status(request.getStatus() != null 
+        Court court = new Court(
+            request.getName(),
+            request.getType(),
+            request.getLocation(),
+            request.getDescription(),
+            request.getBasePricePerHour(),
+            request.getImageUrl(),
+            request.getStatus() != null 
                 ? CourtStatus.valueOf(request.getStatus()) 
-                : CourtStatus.ACTIVE)
-            .build();
+                : CourtStatus.ACTIVE,
+            null
+        );
         
         court = courtRepository.save(court);
         return convertToDTO(court);
@@ -115,17 +121,17 @@ public class CourtServiceImpl implements CourtService {
     
     @Override
     public CourtResponseDTO convertToDTO(Court court) {
-        return CourtResponseDTO.builder()
-            .id(court.getId())
-            .name(court.getName())
-            .type(court.getType())
-            .location(court.getLocation())
-            .description(court.getDescription())
-            .basePricePerHour(court.getBasePricePerHour())
-            .imageUrl(court.getImageUrl())
-            .status(court.getStatus().name())
-            .ownerId(court.getOwner() != null ? court.getOwner().getId() : null)
-            .build();
+        CourtResponseDTO dto = new CourtResponseDTO();
+        dto.setId(court.getId());
+        dto.setName(court.getName());
+        dto.setType(court.getType());
+        dto.setLocation(court.getLocation());
+        dto.setDescription(court.getDescription());
+        dto.setBasePricePerHour(court.getBasePricePerHour());
+        dto.setImageUrl(court.getImageUrl());
+        dto.setStatus(court.getStatus().name());
+        dto.setOwnerId(court.getOwner() != null ? court.getOwner().getId() : null);
+        return dto;
     }
     
     // Court Owner methods implementation
@@ -147,18 +153,18 @@ public class CourtServiceImpl implements CourtService {
         CourtOwner owner = courtOwnerRepository.findById(ownerId)
             .orElseThrow(() -> new ResourceNotFoundException("Court Owner", "id", ownerId));
         
-        Court court = Court.builder()
-            .name(request.getName())
-            .type(request.getType())
-            .location(request.getLocation())
-            .description(request.getDescription())
-            .basePricePerHour(request.getBasePricePerHour())
-            .imageUrl(request.getImageUrl())
-            .status(request.getStatus() != null 
+        Court court = new Court(
+            request.getName(),
+            request.getType(),
+            request.getLocation(),
+            request.getDescription(),
+            request.getBasePricePerHour(),
+            request.getImageUrl(),
+            request.getStatus() != null 
                 ? CourtStatus.valueOf(request.getStatus()) 
-                : CourtStatus.ACTIVE)
-            .owner(owner)
-            .build();
+                : CourtStatus.ACTIVE,
+            owner
+        );
         
         court = courtRepository.save(court);
         return convertToDTO(court);
@@ -190,17 +196,17 @@ public class CourtServiceImpl implements CourtService {
     }
     
     private BookingResponseDTO convertBookingToDTO(Booking booking) {
-        return BookingResponseDTO.builder()
-            .id(booking.getId())
-            .userId(booking.getUser().getId())
-            .userName(booking.getUser().getFullName())
-            .scheduleId(booking.getSchedule().getId())
-            .courtName(booking.getSchedule().getCourt().getName())
-            .scheduleDate(booking.getSchedule().getDate().toString())
-            .scheduleTime(booking.getSchedule().getStartTime() + " - " + booking.getSchedule().getEndTime())
-            .totalPrice(booking.getTotalPrice())
-            .status(booking.getStatus().name())
-            .bookingTime(booking.getBookingTime())
-            .build();
+        BookingResponseDTO dto = new BookingResponseDTO();
+        dto.setId(booking.getId());
+        dto.setUserId(booking.getUser().getId());
+        dto.setUserName(booking.getUser().getFullName());
+        dto.setScheduleId(booking.getSchedule().getId());
+        dto.setCourtName(booking.getSchedule().getCourt().getName());
+        dto.setScheduleDate(booking.getSchedule().getDate().toString());
+        dto.setScheduleTime(booking.getSchedule().getStartTime() + " - " + booking.getSchedule().getEndTime());
+        dto.setTotalPrice(booking.getTotalPrice());
+        dto.setStatus(booking.getStatus().name());
+        dto.setBookingTime(booking.getBookingTime());
+        return dto;
     }
 }
